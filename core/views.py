@@ -38,8 +38,72 @@ class DashboardView(LoginRequiredMixin, TemplateView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['recent_todos'] = Todo.objects.filter(user=self.request.user).order_by('-created_at')[:5]
-        context['recent_journals'] = Journal.objects.filter(user=self.request.user).order_by('-date')[:5]
+        user = self.request.user
+        
+        # 1. Most Frequent Mood
+        from django.db.models import Count
+        most_common_mood = Journal.objects.filter(user=user).values('mood').annotate(count=Count('mood')).order_by('-count').first()
+        context['most_frequent_mood'] = most_common_mood['mood'] if most_common_mood else "No Data"
+
+        # 2. Todo Completion Percentage
+        total_todos = Todo.objects.filter(user=user).count()
+        completed_todos = Todo.objects.filter(user=user, is_completed=True).count()
+        if total_todos > 0:
+            context['todo_completion_percentage'] = int((completed_todos / total_todos) * 100)
+        else:
+            context['todo_completion_percentage'] = 0
+            
+        # 3. Total Balance
+        transactions = Transaction.objects.filter(user=user)
+        total_income = sum(t.amount for t in transactions if not t.is_expense)
+        total_expense = sum(t.amount for t in transactions if t.is_expense)
+        context['total_balance'] = total_income - total_expense
+
+        # 4. Calendar Year Activity Data (Dot Graph)
+        # We will check for Journal entries for each day in the CURRENT YEAR (Jan 1 - Dec 31).
+        # Structure: List of objects/dicts: {'date': date_obj, 'has_activity': bool, 'is_future': bool}
+        import datetime
+        import calendar
+        
+        today = timezone.now().date()
+        current_year = today.year
+        
+        # Determine number of days in current year
+        is_leap = calendar.isleap(current_year)
+        days_in_year = 366 if is_leap else 365
+        
+        # Get start date and end date
+        start_date = datetime.date(current_year, 1, 1)
+        # end_date = datetime.date(current_year, 12, 31) # Not strictly needed for loop but good context
+        
+        # Get all dates with journal entries efficiently
+        journal_dates = set(Journal.objects.filter(
+            user=user, 
+            date__year=current_year
+        ).values_list('date', flat=True))
+
+        activity_data = []
+        future_days_count = 0
+        
+        for i in range(days_in_year): 
+             date = start_date + datetime.timedelta(days=i)
+             is_future = date > today
+             is_today = date == today
+             
+             if is_future:
+                 future_days_count += 1
+                 
+             activity_data.append({
+                 'date': date,
+                 'has_activity': date in journal_dates and not is_future, 
+                 'is_future': is_future,
+                 'is_today': is_today
+             })
+        
+        context['activity_data'] = activity_data
+        context['days_remaining'] = future_days_count
+        context['current_year'] = current_year
+        
         return context
 
 # Todo Views
@@ -167,6 +231,54 @@ class ExpenseCreateView(LoginRequiredMixin, CreateView):
         form.instance.is_expense = True
         messages.success(self.request, 'Expense recorded successfully.')
         return super().form_valid(form)
+
+class IncomeUpdateView(LoginRequiredMixin, UpdateView):
+    model = Transaction
+    form_class = IncomeForm
+    template_name = 'core/transaction_form.html'
+    success_url = reverse_lazy('transaction-list')
+
+    def get_queryset(self):
+        return Transaction.objects.filter(user=self.request.user, is_expense=False)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Edit Income'
+        return context
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Income updated successfully.')
+        return super().form_valid(form)
+
+class ExpenseUpdateView(LoginRequiredMixin, UpdateView):
+    model = Transaction
+    form_class = ExpenseForm
+    template_name = 'core/transaction_form.html'
+    success_url = reverse_lazy('transaction-list')
+
+    def get_queryset(self):
+        return Transaction.objects.filter(user=self.request.user, is_expense=True)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Edit Expense'
+        return context
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Expense updated successfully.')
+        return super().form_valid(form)
+
+class TransactionDeleteView(LoginRequiredMixin, DeleteView):
+    model = Transaction
+    success_url = reverse_lazy('transaction-list')
+    template_name = 'core/transaction_confirm_delete.html'
+
+    def get_queryset(self):
+        return Transaction.objects.filter(user=self.request.user)
+
+    def delete(self, request, *args, **kwargs):
+        messages.success(request, 'Transaction deleted successfully.')
+        return super().delete(request, *args, **kwargs)
 
 # LifeGoal Views
 class LifeGoalListView(LoginRequiredMixin, ListView):

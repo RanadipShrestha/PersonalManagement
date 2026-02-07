@@ -27,6 +27,9 @@ urlpatterns = [
     path('finance/', views.TransactionListView.as_view(), name='transaction-list'),
     path('finance/income/new/', views.IncomeCreateView.as_view(), name='income-create'),
     path('finance/expense/new/', views.ExpenseCreateView.as_view(), name='expense-create'),
+    path('finance/income/<int:pk>/update/', views.IncomeUpdateView.as_view(), name='income-update'),
+    path('finance/expense/<int:pk>/update/', views.ExpenseUpdateView.as_view(), name='expense-update'),
+    path('finance/transaction/<int:pk>/delete/', views.TransactionDeleteView.as_view(), name='transaction-delete'),
 
     # Life Goals
     path('goals/', views.LifeGoalListView.as_view(), name='lifegoal-list'),

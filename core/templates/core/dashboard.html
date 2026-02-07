@@ -1,58 +1,122 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<div class="p-3"> <!-- Added padding wrapper -->
 <div class="row">
     <div class="col-md-12 mb-4">
         <h1>Dashboard</h1>
         <p class="lead">Welcome back, {{ user.username }}!</p>
+            </ul>
+             <div class="card-body">
+                <a href="{% url 'journal-list' %}" class="card-link">View All Journal Entries</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .activity-graph {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px; /* Increased gap */
+        max-width: 40%; /* Restricted width as requested */
+        justify-content: flex-start;
+    }
+    .day-dot {
+        width: 14px; /* Slightly larger */
+        height: 14px;
+        border-radius: 3px;
+    }
+    .day-dot.past {
+        background-color: #9be9a8; /* Consistent light green for ALL past days */
+        opacity: 0.6;
+    }
+    .day-dot.today {
+        background-color: #2196f3 !important; /* Blue for TODAY */
+        opacity: 1;
+        border: 1px solid #1976d2;
+    }
+    .day-dot.active {
+        background-color: #216e39 !important; /* Dark green for days with activity */
+        opacity: 1;
+    }
+    .day-dot.future {
+        background-color: #ebedf0; /* Very light/empty for future */
+        border: 1px dashed #d1d5da; /* Dashed border for future */
+        opacity: 0.5;
+    }
+    
+    /* Hover tooltip effect */
+    .day-dot {
+        position: relative;
+        cursor: pointer;
+    }
+    .day-dot:hover::after {
+        content: attr(title);
+        position: absolute;
+        bottom: 125%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #24292e;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 6px;
+        font-size: 11px;
+        white-space: nowrap;
+        z-index: 10;
+        pointer-events: none;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+</style>
+
+<div class="row mb-4">
+    <!-- Most Frequent Mood -->
+    <div class="col-md-4">
+        <div class="card text-white bg-primary shadow h-100">
+            <div class="card-body">
+                <h5 class="card-title">Most Frequent Mood</h5>
+                <h2 class="display-4">{{ most_frequent_mood }}</h2>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Todo Completion Efficiency -->
+    <div class="col-md-4">
+        <div class="card text-white bg-success shadow h-100">
+            <div class="card-body">
+                <h5 class="card-title">Todo Completion</h5>
+                <h2 class="display-4">{{ todo_completion_percentage }}%</h2>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Total Balance -->
+    <div class="col-md-4">
+        <div class="card text-white bg-info shadow h-100">
+            <div class="card-body">
+                <h5 class="card-title">Total Balance</h5>
+                <h2 class="display-4">{{ total_balance }}</h2>
+            </div>
+        </div>
     </div>
 </div>
 
 <div class="row">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header bg-primary text-white">
-                Recent Todos
-                <a href="{% url 'todo-create' %}" class="btn btn-sm btn-light float-end">+ New</a>
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">{{ current_year }} Activity Log</h5>
+                <small class="text-muted">{{ days_remaining }} days remaining in {{ current_year }}</small>
             </div>
-            <ul class="list-group list-group-flush">
-                {% for todo in recent_todos %}
-                    <li class="list-group-item">
-                        {% if todo.is_completed %}
-                            <del>{{ todo.title }}</del>
-                        {% else %}
-                            {{ todo.title }}
-                        {% endif %}
-                        <small class="text-muted float-end">{{ todo.created_at|date:"M d" }}</small>
-                    </li>
-                {% empty %}
-                    <li class="list-group-item">No recent todos.</li>
-                {% endfor %}
-            </ul>
             <div class="card-body">
-                <a href="{% url 'todo-list' %}" class="card-link">View All Todos</a>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header bg-success text-white">
-                Recent Journal Entries
-                <a href="{% url 'journal-create' %}" class="btn btn-sm btn-light float-end">+ New</a>
-            </div>
-            <ul class="list-group list-group-flush">
-                {% for journal in recent_journals %}
-                    <li class="list-group-item">
-                        <a href="{% url 'journal-detail' journal.pk %}">{{ journal.title }}</a>
-                        <span class="badge bg-secondary float-end">{{ journal.mood }}</span>
-                    </li>
-                {% empty %}
-                    <li class="list-group-item">No recent entries.</li>
-                {% endfor %}
-            </ul>
-             <div class="card-body">
-                <a href="{% url 'journal-list' %}" class="card-link">View All Journal Entries</a>
+                <div class="activity-graph p-2">
+                    {% for day in activity_data %}
+                        <div class="day-dot 
+                                    {% if day.is_today %}today{% elif day.is_future %}future{% else %}past{% endif %} 
+                                    {% if day.has_activity %}active{% endif %}" 
+                             title="{{ day.date|date:'M d, Y' }}"></div>
+                    {% endfor %}
+                </div>
             </div>
         </div>
     </div>
@@ -87,4 +151,5 @@
         </div>
     </div>
 </div>
+</div> <!-- End padding wrapper -->
 {% endblock %}
