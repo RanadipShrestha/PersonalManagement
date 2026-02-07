@@ -1,32 +1,56 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="row mb-3">
+<div class="row mb-4 align-items-center">
     <div class="col">
-        <h2>My Journal</h2>
+        <h2 class="fw-bold text-primary">My Journal</h2>
+        <p class="text-muted">Capture your thoughts and memories</p>
     </div>
-    <div class="col text-end">
-        <a href="{% url 'journal-create' %}" class="btn btn-primary">New Entry</a>
+    <div class="col-auto">
+        <a href="{% url 'journal-create' %}" class="btn btn-primary shadow-sm"><i class="bi bi-plus-lg"></i> New Entry</a>
     </div>
 </div>
 
 <div class="row">
     {% for journal in journals %}
-        <div class="col-md-4 mb-3">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h5 class="card-title">{{ journal.title }}</h5>
-                    <h6 class="card-subtitle mb-2 text-muted">{{ journal.date|date:"F d, Y" }}</h6>
-                    <p class="card-text">{{ journal.content|truncatewords:20 }}</p>
-                    <span class="badge bg-info">{{ journal.mood }}</span>
-                    <a href="{% url 'journal-detail' journal.pk %}" class="stretched-link"></a>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-0 shadow-sm journal-card">
+                <div class="card-body d-flex flex-column">
+                    <div class="d-flex justify-content-between mb-2">
+                        <small class="text-muted fw-bold text-uppercase" style="font-size: 0.75rem;">{{ journal.date|date:"F d, Y" }}</small>
+                        <span class="badge bg-light text-primary border">{{ journal.mood }}</span>
+                    </div>
+                    <h5 class="card-title fw-bold mb-3">{{ journal.title }}</h5>
+                    <p class="card-text text-muted flex-grow-1">{{ journal.content|striptags|truncatewords:25 }}</p>
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <a href="{% url 'journal-detail' journal.pk %}" class="btn btn-outline-primary btn-sm">Read More</a>
+                        <div class="btn-group">
+                            <a href="{% url 'journal-update' journal.pk %}" class="btn btn-sm btn-light text-primary" title="Edit"><i class="bi bi-pencil"></i></a>
+                            <a href="{% url 'journal-delete' journal.pk %}" class="btn btn-sm btn-light text-danger" title="Delete"><i class="bi bi-trash"></i></a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     {% empty %}
-        <div class="col">
-            <div class="alert alert-info">No journal entries yet. Write about your day!</div>
+        <div class="col-12">
+            <div class="text-center py-5">
+                <div class="mb-3 text-muted" style="font-size: 3rem;"><i class="bi bi-journal-richtext"></i></div>
+                <h5 class="text-muted">No entries yet</h5>
+                <p class="text-muted">Start writing your first journal entry today.</p>
+                <a href="{% url 'journal-create' %}" class="btn btn-primary mt-2">Write Journal</a>
+            </div>
         </div>
     {% endfor %}
 </div>
+
+<style>
+    .journal-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .journal-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+    }
+</style>
 {% endblock %}

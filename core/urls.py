@@ -16,12 +16,15 @@ urlpatterns = [
     path('todos/', views.TodoListView.as_view(), name='todo-list'),
     path('todos/new/', views.TodoCreateView.as_view(), name='todo-create'),
     path('todos/<int:pk>/update/', views.TodoUpdateView.as_view(), name='todo-update'),
+    path('todos/<int:pk>/delete/', views.TodoDeleteView.as_view(), name='todo-delete'),
     path('todos/<int:pk>/toggle/', views.toggle_todo, name='todo-toggle'),
 
     # Journal
     path('journal/', views.JournalListView.as_view(), name='journal-list'),
     path('journal/new/', views.JournalCreateView.as_view(), name='journal-create'),
     path('journal/<int:pk>/', views.JournalDetailView.as_view(), name='journal-detail'),
+    path('journal/<int:pk>/edit/', views.JournalUpdateView.as_view(), name='journal-update'),
+    path('journal/<int:pk>/delete/', views.JournalDeleteView.as_view(), name='journal-delete'),
 
     # Finance
     path('finance/', views.TransactionListView.as_view(), name='transaction-list'),

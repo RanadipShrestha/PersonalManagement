@@ -45,8 +45,6 @@ class SellShareCalculationTests(TestCase):
         }
         response = self.client.post(reverse('sellshare-create'), data)
         self.assertEqual(response.status_code, 200) # Re-renders form
-        if 'form' in response.context:
-            print("Form Errors:", response.context['form'].errors)
         self.assertFormError(response, 'form', None, "Please provide either Sell Price per Share OR Total Sale Amount.")
 
     def test_double_entry_preference(self):

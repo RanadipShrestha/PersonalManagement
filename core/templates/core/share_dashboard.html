@@ -2,13 +2,14 @@
 {% load core_extras %}
 
 {% block content %}
-<div class="row mb-4">
-    <div class="col-md-12">
-        <h2>Share Portfolio</h2>
-        <div class="d-flex justify-content-end mb-3">
-            <a href="{% url 'buyshare-create' %}" class="btn btn-success me-2">Buy Shares</a>
-            <a href="{% url 'sellshare-create' %}" class="btn btn-danger">Sell Shares</a>
-        </div>
+<div class="row mb-5 align-items-center">
+    <div class="col">
+        <h2 class="fw-bold text-primary">Share Portfolio</h2>
+        <p class="text-muted">Track your investments and performance</p>
+    </div>
+    <div class="col-auto">
+        <a href="{% url 'buyshare-create' %}" class="btn btn-success me-2 shadow-sm"><i class="bi bi-graph-up-arrow"></i> Buy Shares</a>
+        <a href="{% url 'sellshare-create' %}" class="btn btn-danger shadow-sm"><i class="bi bi-graph-down-arrow"></i> Sell Shares</a>
     </div>
 </div>
 
@@ -17,38 +18,38 @@
 <!-- Section 1: Current Holdings -->
 <div class="row mb-5">
     <div class="col-md-12">
-        <div class="card">
-            <div class="card-header bg-info text-white">
-                <h5 class="mb-0">Current Holdings (Active)</h5>
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white border-0 pt-4 px-4 pb-0">
+                <h5 class="fw-bold text-primary mb-0"><i class="bi bi-briefcase"></i> Current Holdings</h5>
             </div>
-            <div class="card-body">
+            <div class="card-body p-4">
                 <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light">
                             <tr>
-                                <th>Company</th>
-                                <th>Quantity Left</th>
-                                <th>Avg Buy Price</th>
-                                <th>Initial Buy Date</th>
-                                <th>Target Hold</th>
-                                <th>Actions</th>
+                                <th class="py-3 ps-3 rounded-start">Company</th>
+                                <th class="py-3">Quantity</th>
+                                <th class="py-3">Avg Price</th>
+                                <th class="py-3">Buy Date</th>
+                                <th class="py-3">Target</th>
+                                <th class="py-3 pe-3 text-end rounded-end">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for holding in current_holdings %}
                         <tr>
-                            <td>{{ holding.company_name }}</td>
-                            <td>{{ holding.remaining_quantity }}</td>
+                            <td class="ps-3 fw-bold">{{ holding.company_name }}</td>
+                            <td><span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3">{{ holding.remaining_quantity }}</span></td>
                             <td>{{ holding.price_per_share }}</td>
-                            <td>{{ holding.buy_date|date:"M d, Y" }}</td>
+                            <td class="text-muted">{{ holding.buy_date|date:"M d, Y" }}</td>
                             <td>{{ holding.target_holding_period }}</td>
-                            <td>
-                                <a href="{% url 'buyshare-update' holding.pk %}" class="btn btn-sm btn-secondary">Edit</a>
-                                <a href="{% url 'buyshare-delete' holding.pk %}" class="btn btn-sm btn-danger">Delete</a>
+                            <td class="text-end pe-3">
+                                <a href="{% url 'buyshare-update' holding.pk %}" class="btn btn-sm btn-light text-primary me-1"><i class="bi bi-pencil"></i></a>
+                                <a href="{% url 'buyshare-delete' holding.pk %}" class="btn btn-sm btn-light text-danger"><i class="bi bi-trash"></i></a>
                             </td>
                         </tr>
                     {% empty %}
-                                <tr><td colspan="7" class="text-center">No active holdings.</td></tr>
+                                <tr><td colspan="6" class="text-center py-4 text-muted">No active holdings. Time to invest?</td></tr>
                             {% endfor %}
                         </tbody>
                     </table>
@@ -61,47 +62,47 @@
 <!-- Section 2: Buy History -->
 <div class="row mb-5">
     <div class="col-md-12">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">Buy History (All Purchases)</h5>
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0 pt-4 px-4 pb-0">
+                 <h5 class="fw-bold text-secondary mb-0"><i class="bi bi-clock-history"></i> Buy History</h5>
             </div>
-            <div class="card-body">
+            <div class="card-body p-4">
                 <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead>
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light">
                             <tr>
-                                <th>Company</th>
-                                <th>Buy Date</th>
-                                <th>Original Qty</th>
-                                <th>Price/Share</th>
-                                <th>Total Cost</th>
-                                <th>Status</th>
-                                <th>Actions</th>
+                                <th class="py-3 ps-3 rounded-start">Company</th>
+                                <th class="py-3">Date</th>
+                                <th class="py-3">Qty</th>
+                                <th class="py-3">Price</th>
+                                <th class="py-3">Total</th>
+                                <th class="py-3">Status</th>
+                                <th class="py-3 pe-3 text-end rounded-end">Edit</th>
                             </tr>
                         </thead>
                         <tbody>
                              {% for holding in buy_history %}
                                 <tr>
-                                    <td>{{ holding.company_name }}</td>
-                                    <td>{{ holding.buy_date|date:"M d, Y" }}</td>
+                                    <td class="ps-3 fw-medium">{{ holding.company_name }}</td>
+                                    <td class="text-muted">{{ holding.buy_date|date:"M d, Y" }}</td>
                                     <td>{{ holding.quantity }}</td>
                                     <td>{{ holding.price_per_share }}</td>
-                                    <td>{{ holding.total_price }}</td>
+                                    <td class="fw-bold">{{ holding.total_price }}</td>
                                     <td>
                                         {% if holding.remaining_quantity == 0 %}
-                                            <span class="badge bg-secondary">Sold Out</span>
+                                            <span class="badge bg-secondary rounded-pill">Sold Out</span>
                                         {% elif holding.remaining_quantity < holding.quantity %}
-                                            <span class="badge bg-warning text-dark">Partial</span>
+                                            <span class="badge bg-warning text-dark rounded-pill">Partial</span>
                                         {% else %}
-                                            <span class="badge bg-success">Active</span>
+                                            <span class="badge bg-success rounded-pill">Active</span>
                                         {% endif %}
                                     </td>
-                                    <td>
-                                        <a href="{% url 'buyshare-update' holding.pk %}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                    <td class="text-end pe-3">
+                                        <a href="{% url 'buyshare-update' holding.pk %}" class="btn btn-sm btn-light text-secondary"><i class="bi bi-pencil"></i></a>
                                     </td>
                                 </tr>
                              {% empty %}
-                                <tr><td colspan="7" class="text-center">No purchases recorded.</td></tr>
+                                <tr><td colspan="7" class="text-center py-4 text-muted">No purchase history.</td></tr>
                              {% endfor %}
                         </tbody>
                     </table>
@@ -114,40 +115,40 @@
 <!-- Section 3: Sell History -->
 <div class="row">
     <div class="col-md-12">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">Sell History</h5>
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0 pt-4 px-4 pb-0">
+                <h5 class="fw-bold text-success mb-0"><i class="bi bi-cash-coin"></i> Sell History</h5>
             </div>
-            <div class="card-body">
+            <div class="card-body p-4">
                 <div class="table-responsive">
-                    <table class="table table-striped table-hover">
-                        <thead>
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light">
                             <tr>
-                                <th>Company</th>
-                                <th>Sold Date</th>
-                                <th>Qty Sold</th>
-                                <th>Sell Price/Share</th>
-                                <th>Buy Price/Share</th>
-                                <th>Total Sale Amount</th>
-                                <th>Actions</th>
+                                <th class="py-3 ps-3 rounded-start">Company</th>
+                                <th class="py-3">Date</th>
+                                <th class="py-3">Qty</th>
+                                <th class="py-3">Sell Price</th>
+                                <th class="py-3">Buy Price</th>
+                                <th class="py-3">Total Sale</th>
+                                <th class="py-3 pe-3 text-end rounded-end">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for sale in sales %}
                                 <tr>
-                                    <td>{{ sale.buy_share.company_name }}</td>
-                                    <td>{{ sale.sell_date|date:"M d, Y" }}</td>
+                                    <td class="ps-3 fw-medium">{{ sale.buy_share.company_name }}</td>
+                                    <td class="text-muted">{{ sale.sell_date|date:"M d, Y" }}</td>
                                     <td>{{ sale.quantity_sold }}</td>
-                                    <td>{{ sale.sell_price_per_share }}</td>
-                                    <td>{{ sale.buy_share.price_per_share }}</td>
-                                    <td>{{ sale.total_sale_amount|format_money }}</td>
-                                    <td>
-                                        <a href="{% url 'sellshare-update' sale.pk %}" class="btn btn-sm btn-secondary">Edit</a>
-                                        <a href="{% url 'sellshare-delete' sale.pk %}" class="btn btn-sm btn-danger">Delete</a>
+                                    <td class="text-success">{{ sale.sell_price_per_share }}</td>
+                                    <td class="text-muted">{{ sale.buy_share.price_per_share }}</td>
+                                    <td class="fw-bold text-success">+{{ sale.total_sale_amount|format_money }}</td>
+                                    <td class="text-end pe-3">
+                                        <a href="{% url 'sellshare-update' sale.pk %}" class="btn btn-sm btn-light text-secondary me-1"><i class="bi bi-pencil"></i></a>
+                                        <a href="{% url 'sellshare-delete' sale.pk %}" class="btn btn-sm btn-light text-danger"><i class="bi bi-trash"></i></a>
                                     </td>
                                 </tr>
                             {% empty %}
-                                <tr><td colspan="7" class="text-center">No sales recorded.</td></tr>
+                                <tr><td colspan="7" class="text-center py-4 text-muted">No sales recorded.</td></tr>
                             {% endfor %}
                         </tbody>
                     </table>

@@ -1,37 +1,54 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="row mb-3">
+<div class="row mb-4 align-items-center">
     <div class="col">
-        <h2>Life Goals</h2>
+        <h2 class="fw-bold text-primary">Life Goals</h2>
+        <p class="text-muted">Dream big and track your progress</p>
     </div>
-    <div class="col text-end">
-        <a href="{% url 'lifegoal-create' %}" class="btn btn-primary">Set New Goal</a>
+    <div class="col-auto">
+        <a href="{% url 'lifegoal-create' %}" class="btn btn-primary shadow-sm"><i class="bi bi-plus-lg"></i> Set New Goal</a>
     </div>
 </div>
 
 <div class="row">
     {% for goal in goals %}
         <div class="col-md-6 mb-4">
-            <div class="card h-100 {% if goal.status == 'Completed' %}border-success{% endif %}">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <span class="badge bg-secondary">{{ goal.status }}</span>
-                    <small>Target: {{ goal.target_date|date:"M d, Y" }}</small>
-                </div>
+            <div class="card h-100 border-0 shadow-sm goal-card {% if goal.status == 'Completed' %}border-start border-success border-4{% endif %}">
                 <div class="card-body">
-                    <h5 class="card-title">{{ goal.title }}</h5>
-                    <p class="card-text">{{ goal.description }}</p>
-                </div>
-                <div class="card-footer bg-transparent border-top-0">
-                    <a href="{% url 'lifegoal-update' goal.pk %}" class="btn btn-sm btn-outline-primary">Update</a>
-                    <a href="{% url 'lifegoal-delete' goal.pk %}" class="btn btn-sm btn-outline-danger float-end">Delete</a>
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <span class="badge {% if goal.status == 'Completed' %}bg-success{% else %}bg-secondary{% endif %} bg-opacity-10 text-dark border">{{ goal.status }}</span>
+                        <small class="text-muted"><i class="bi bi-calendar-event"></i> {{ goal.target_date|date:"M d, Y" }}</small>
+                    </div>
+                    <h5 class="card-title fw-bold mb-3">{{ goal.title }}</h5>
+                    <p class="card-text text-muted mb-4">{{ goal.description }}</p>
+                    
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{% url 'lifegoal-update' goal.pk %}" class="btn btn-sm btn-outline-primary">Update</a>
+                        <a href="{% url 'lifegoal-delete' goal.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                    </div>
                 </div>
             </div>
         </div>
     {% empty %}
-        <div class="col">
-            <div class="alert alert-info">No goals set yet. Dream big!</div>
+        <div class="col-12">
+            <div class="text-center py-5">
+                <div class="mb-3 text-muted" style="font-size: 3rem;"><i class="bi bi-flag"></i></div>
+                <h5 class="text-muted">No goals set yet</h5>
+                <p class="text-muted">Define your future and start achieving today.</p>
+                <a href="{% url 'lifegoal-create' %}" class="btn btn-primary mt-2">Set Goal</a>
+            </div>
         </div>
     {% endfor %}
 </div>
+
+<style>
+    .goal-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .goal-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+    }
+</style>
 {% endblock %}

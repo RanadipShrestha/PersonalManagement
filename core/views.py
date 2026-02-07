@@ -134,11 +134,23 @@ class TodoUpdateView(LoginRequiredMixin, UpdateView):
     success_url = reverse_lazy('todo-list')
 
     def get_queryset(self):
-        return Todo.objects.filter(user=self.request.user, created_at__date=timezone.now().date())
+        return Todo.objects.filter(user=self.request.user)
     
     def form_valid(self, form):
         messages.success(self.request, 'Todo updated successfully.')
         return super().form_valid(form)
+
+class TodoDeleteView(LoginRequiredMixin, DeleteView):
+    model = Todo
+    template_name = 'core/todo_confirm_delete.html'
+    success_url = reverse_lazy('todo-list')
+
+    def get_queryset(self):
+        return Todo.objects.filter(user=self.request.user)
+
+    def delete(self, request, *args, **kwargs):
+        messages.success(request, 'Todo deleted successfully.')
+        return super().delete(request, *args, **kwargs)
 
 @login_required
 @require_POST
@@ -178,6 +190,31 @@ class JournalCreateView(LoginRequiredMixin, CreateView):
         except IntegrityError:
             form.add_error(None, "You have already created a journal for today.")
             return self.form_invalid(form)
+
+class JournalUpdateView(LoginRequiredMixin, UpdateView):
+    model = Journal
+    form_class = JournalForm
+    template_name = 'core/journal_form.html'
+    success_url = reverse_lazy('journal-list')
+
+    def get_queryset(self):
+        return Journal.objects.filter(user=self.request.user)
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Journal updated successfully.')
+        return super().form_valid(form)
+
+class JournalDeleteView(LoginRequiredMixin, DeleteView):
+    model = Journal
+    template_name = 'core/journal_confirm_delete.html'
+    success_url = reverse_lazy('journal-list')
+
+    def get_queryset(self):
+        return Journal.objects.filter(user=self.request.user)
+
+    def delete(self, request, *args, **kwargs):
+        messages.success(request, 'Journal deleted successfully.')
+        return super().delete(request, *args, **kwargs)
 
 # Transaction Views
 class TransactionListView(LoginRequiredMixin, ListView):

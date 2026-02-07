@@ -1,43 +1,60 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="row mb-3">
+<div class="row mb-4 align-items-center">
     <div class="col">
-        <h2>My Todos</h2>
+        <h2 class="fw-bold text-primary">My Todos</h2>
+        <p class="text-muted">Stay organized and get things done</p>
     </div>
-    <div class="col text-end">
-        <a href="{% url 'todo-create' %}" class="btn btn-primary">Add Todo</a>
+    <div class="col-auto">
+        <a href="{% url 'todo-create' %}" class="btn btn-primary shadow-sm"><i class="bi bi-plus-lg"></i> Add Todo</a>
     </div>
 </div>
 
 <div class="row">
     <div class="col-md-12">
         {% for todo in todos %}
-            <div class="card mb-2">
-                <div class="card-body d-flex justify-content-between align-items-center">
+            <div class="card border-0 shadow-sm mb-3 todo-item">
+                <div class="card-body p-3 d-flex justify-content-between align-items-center">
                     <div class="d-flex align-items-center">
                         <form action="{% url 'todo-toggle' todo.pk %}" method="post" class="me-3">
                             {% csrf_token %}
-                            <button type="submit" class="btn btn-sm {% if todo.is_completed %}btn-success{% else %}btn-outline-secondary{% endif %}">
-                                {% if todo.is_completed %}✓{% else %}O{% endif %}
+                            <button type="submit" class="btn btn-sm rounded-circle p-0 d-flex align-items-center justify-content-center {% if todo.is_completed %}btn-success{% else %}btn-outline-secondary{% endif %}" style="width: 32px; height: 32px;">
+                                {% if todo.is_completed %}<i class="bi bi-check-lg" style="font-size: 1.2rem;">✓</i>{% else %}{% endif %}
                             </button>
                         </form>
                         
                         <div>
-                            <h5 class="card-title mb-0 {% if todo.is_completed %}text-decoration-line-through text-muted{% endif %}">
+                            <h5 class="card-title mb-0 {% if todo.is_completed %}text-decoration-line-through text-muted{% endif %} fw-semibold">
                                 {{ todo.title }}
                             </h5>
-                            <small class="text-muted">Created: {{ todo.created_at|date:"M d, Y" }}</small>
+                            <small class="text-muted" style="font-size: 0.8rem;">{{ todo.created_at|date:"M d, Y" }}</small>
                         </div>
                     </div>
                     <div>
-                        <a href="{% url 'todo-update' todo.pk %}" class="btn btn-secondary btn-sm">Edit</a>
+                        <a href="{% url 'todo-update' todo.pk %}" class="btn btn-light text-primary btn-sm"><i class="bi bi-pencil"></i> Edit</a>
+                        <a href="{% url 'todo-delete' todo.pk %}" class="btn btn-light text-danger btn-sm"><i class="bi bi-trash"></i></a>
                     </div>
                 </div>
             </div>
         {% empty %}
-            <div class="alert alert-info">No todos found. Create one to get started!</div>
+            <div class="text-center py-5">
+                <div class="mb-3 text-muted" style="font-size: 3rem;"><i class="bi bi-clipboard-check"></i></div>
+                <h5 class="text-muted">No todos yet</h5>
+                <p class="text-muted">Create a task to get started!</p>
+                <a href="{% url 'todo-create' %}" class="btn btn-primary mt-2">Create Todo</a>
+            </div>
         {% endfor %}
     </div>
 </div>
+
+<style>
+    .todo-item {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .todo-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
+    }
+</style>
 {% endblock %}

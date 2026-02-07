@@ -3,14 +3,20 @@
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-md-6">
-        <div class="card border-danger">
-            <div class="card-header bg-danger text-white">Confirm Delete</div>
-            <div class="card-body">
-                <p>Are you sure you want to delete the todo "<strong>{{ object.title }}</strong>"?</p>
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4 text-center">
+                <div class="mb-4 text-danger">
+                    <i class="bi bi-exclamation-circle" style="font-size: 3rem;"></i>
+                </div>
+                <h3 class="card-title fw-bold mb-3">Delete Todo?</h3>
+                <p class="card-text text-muted mb-4">Are you sure you want to delete "<strong>{{ object.title }}</strong>"? This action cannot be undone.</p>
+                
                 <form method="post">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-danger">Confirm Delete</button>
-                    <a href="{% url 'todo-list' %}" class="btn btn-secondary">Cancel</a>
+                    <div class="d-flex justify-content-center gap-3">
+                        <a href="{% url 'todo-list' %}" class="btn btn-light px-4">Cancel</a>
+                        <button type="submit" class="btn btn-danger px-4">Delete</button>
+                    </div>
                 </form>
             </div>
         </div>
