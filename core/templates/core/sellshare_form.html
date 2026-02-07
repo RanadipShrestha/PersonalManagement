@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">Record Share Sale</div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form.buy_share|as_crispy_field }}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            {{ form.quantity_sold|as_crispy_field }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.sell_date|as_crispy_field }}
+                        </div>
+                    </div>
+
+                    <hr>
+                    <p class="text-muted small">Enter <strong>either</strong> Sell Price per Share <strong>OR</strong> Total Sale Amount.</p>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            {{ form.sell_price_per_share|as_crispy_field }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.total_sale_amount|as_crispy_field }}
+                        </div>
+                    </div>
+
+                    {{ form.notes|as_crispy_field }}
+                    <div class="mt-3">
+                        <button type="submit" class="btn btn-danger">Record Sell</button>
+                        <a href="{% url 'share-dashboard' %}" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

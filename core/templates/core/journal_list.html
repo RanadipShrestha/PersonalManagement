@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col">
+        <h2>My Journal</h2>
+    </div>
+    <div class="col text-end">
+        <a href="{% url 'journal-create' %}" class="btn btn-primary">New Entry</a>
+    </div>
+</div>
+
+<div class="row">
+    {% for journal in journals %}
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{{ journal.title }}</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">{{ journal.date|date:"F d, Y" }}</h6>
+                    <p class="card-text">{{ journal.content|truncatewords:20 }}</p>
+                    <span class="badge bg-info">{{ journal.mood }}</span>
+                    <a href="{% url 'journal-detail' journal.pk %}" class="stretched-link"></a>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="col">
+            <div class="alert alert-info">No journal entries yet. Write about your day!</div>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

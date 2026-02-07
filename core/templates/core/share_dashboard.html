@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+{% load core_extras %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h2>Share Portfolio</h2>
+        <div class="d-flex justify-content-end mb-3">
+            <a href="{% url 'buyshare-create' %}" class="btn btn-success me-2">Buy Shares</a>
+            <a href="{% url 'sellshare-create' %}" class="btn btn-danger">Sell Shares</a>
+        </div>
+    </div>
+</div>
+
+<!-- Top Metrics removed as per request -->
+
+<!-- Section 1: Current Holdings -->
+<div class="row mb-5">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">Current Holdings (Active)</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Company</th>
+                                <th>Quantity Left</th>
+                                <th>Avg Buy Price</th>
+                                <th>Initial Buy Date</th>
+                                <th>Target Hold</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for holding in current_holdings %}
+                        <tr>
+                            <td>{{ holding.company_name }}</td>
+                            <td>{{ holding.remaining_quantity }}</td>
+                            <td>{{ holding.price_per_share }}</td>
+                            <td>{{ holding.buy_date|date:"M d, Y" }}</td>
+                            <td>{{ holding.target_holding_period }}</td>
+                            <td>
+                                <a href="{% url 'buyshare-update' holding.pk %}" class="btn btn-sm btn-secondary">Edit</a>
+                                <a href="{% url 'buyshare-delete' holding.pk %}" class="btn btn-sm btn-danger">Delete</a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                                <tr><td colspan="7" class="text-center">No active holdings.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Section 2: Buy History -->
+<div class="row mb-5">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Buy History (All Purchases)</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Company</th>
+                                <th>Buy Date</th>
+                                <th>Original Qty</th>
+                                <th>Price/Share</th>
+                                <th>Total Cost</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                             {% for holding in buy_history %}
+                                <tr>
+                                    <td>{{ holding.company_name }}</td>
+                                    <td>{{ holding.buy_date|date:"M d, Y" }}</td>
+                                    <td>{{ holding.quantity }}</td>
+                                    <td>{{ holding.price_per_share }}</td>
+                                    <td>{{ holding.total_price }}</td>
+                                    <td>
+                                        {% if holding.remaining_quantity == 0 %}
+                                            <span class="badge bg-secondary">Sold Out</span>
+                                        {% elif holding.remaining_quantity < holding.quantity %}
+                                            <span class="badge bg-warning text-dark">Partial</span>
+                                        {% else %}
+                                            <span class="badge bg-success">Active</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'buyshare-update' holding.pk %}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                    </td>
+                                </tr>
+                             {% empty %}
+                                <tr><td colspan="7" class="text-center">No purchases recorded.</td></tr>
+                             {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Section 3: Sell History -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Sell History</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Company</th>
+                                <th>Sold Date</th>
+                                <th>Qty Sold</th>
+                                <th>Sell Price/Share</th>
+                                <th>Buy Price/Share</th>
+                                <th>Total Sale Amount</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for sale in sales %}
+                                <tr>
+                                    <td>{{ sale.buy_share.company_name }}</td>
+                                    <td>{{ sale.sell_date|date:"M d, Y" }}</td>
+                                    <td>{{ sale.quantity_sold }}</td>
+                                    <td>{{ sale.sell_price_per_share }}</td>
+                                    <td>{{ sale.buy_share.price_per_share }}</td>
+                                    <td>{{ sale.total_sale_amount|format_money }}</td>
+                                    <td>
+                                        <a href="{% url 'sellshare-update' sale.pk %}" class="btn btn-sm btn-secondary">Edit</a>
+                                        <a href="{% url 'sellshare-delete' sale.pk %}" class="btn btn-sm btn-danger">Delete</a>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr><td colspan="7" class="text-center">No sales recorded.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <h1>Dashboard</h1>
+        <p class="lead">Welcome back, {{ user.username }}!</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                Recent Todos
+                <a href="{% url 'todo-create' %}" class="btn btn-sm btn-light float-end">+ New</a>
+            </div>
+            <ul class="list-group list-group-flush">
+                {% for todo in recent_todos %}
+                    <li class="list-group-item">
+                        {% if todo.is_completed %}
+                            <del>{{ todo.title }}</del>
+                        {% else %}
+                            {{ todo.title }}
+                        {% endif %}
+                        <small class="text-muted float-end">{{ todo.created_at|date:"M d" }}</small>
+                    </li>
+                {% empty %}
+                    <li class="list-group-item">No recent todos.</li>
+                {% endfor %}
+            </ul>
+            <div class="card-body">
+                <a href="{% url 'todo-list' %}" class="card-link">View All Todos</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                Recent Journal Entries
+                <a href="{% url 'journal-create' %}" class="btn btn-sm btn-light float-end">+ New</a>
+            </div>
+            <ul class="list-group list-group-flush">
+                {% for journal in recent_journals %}
+                    <li class="list-group-item">
+                        <a href="{% url 'journal-detail' journal.pk %}">{{ journal.title }}</a>
+                        <span class="badge bg-secondary float-end">{{ journal.mood }}</span>
+                    </li>
+                {% empty %}
+                    <li class="list-group-item">No recent entries.</li>
+                {% endfor %}
+            </ul>
+             <div class="card-body">
+                <a href="{% url 'journal-list' %}" class="card-link">View All Journal Entries</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">Finance</h5>
+                <p class="card-text">Track your income and expenses.</p>
+                <a href="{% url 'transaction-list' %}" class="btn btn-outline-primary">Manage Finance</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">Life Goals</h5>
+                <p class="card-text">Set and track your long-term goals.</p>
+                <a href="{% url 'lifegoal-list' %}" class="btn btn-outline-primary">Manage Goals</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">Shares</h5>
+                <p class="card-text">Track your share portfolio.</p>
+                <a href="{% url 'share-dashboard' %}" class="btn btn-outline-primary">Manage Shares</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,332 @@
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth import login
+from django.contrib import messages
+from django.views.generic import ListView, CreateView, DeleteView, UpdateView, DetailView, TemplateView
+from django.contrib.auth.views import LoginView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.urls import reverse_lazy
+from django.db import IntegrityError
+from django.utils import timezone
+from django.db.models import Sum, F
+from django.db.models.functions import Coalesce
+from .forms import CustomUserCreationForm, TodoForm, JournalForm, IncomeForm, ExpenseForm, LifeGoalForm, LifeGoalUpdateForm, BuyShareForm, SellShareForm
+from .models import Todo, Journal, Transaction, LifeGoal, BuyShare, SellShare
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.contrib.auth.decorators import login_required
+
+# Authentication Views
+def register(request):
+    if request.method == 'POST':
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            messages.success(request, 'Registration successful. Welcome!')
+            return redirect('dashboard')
+    else:
+        form = CustomUserCreationForm()
+    return render(request, 'registration/register.html', {'form': form})
+
+class CustomLoginView(LoginView):
+    template_name = 'registration/login.html'
+    redirect_authenticated_user = True
+
+# Dashboard
+class DashboardView(LoginRequiredMixin, TemplateView):
+    template_name = 'core/dashboard.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['recent_todos'] = Todo.objects.filter(user=self.request.user).order_by('-created_at')[:5]
+        context['recent_journals'] = Journal.objects.filter(user=self.request.user).order_by('-date')[:5]
+        return context
+
+# Todo Views
+class TodoListView(LoginRequiredMixin, ListView):
+    model = Todo
+    template_name = 'core/todo_list.html'
+    context_object_name = 'todos'
+
+    def get_queryset(self):
+        # Filter by today's date
+        return Todo.objects.filter(user=self.request.user, created_at__date=timezone.now().date()).order_by('-created_at')
+
+class TodoCreateView(LoginRequiredMixin, CreateView):
+    model = Todo
+    form_class = TodoForm
+    template_name = 'core/todo_form.html'
+    success_url = reverse_lazy('todo-list')
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        messages.success(self.request, 'Todo created successfully.')
+        return super().form_valid(form)
+
+class TodoUpdateView(LoginRequiredMixin, UpdateView):
+    model = Todo
+    form_class = TodoForm
+    template_name = 'core/todo_form.html'
+    success_url = reverse_lazy('todo-list')
+
+    def get_queryset(self):
+        return Todo.objects.filter(user=self.request.user, created_at__date=timezone.now().date())
+    
+    def form_valid(self, form):
+        messages.success(self.request, 'Todo updated successfully.')
+        return super().form_valid(form)
+
+@login_required
+@require_POST
+def toggle_todo(request, pk):
+    todo = get_object_or_404(Todo, pk=pk, user=request.user)
+    todo.is_completed = not todo.is_completed
+    todo.save()
+    return redirect('todo-list')
+
+# Journal Views
+class JournalListView(LoginRequiredMixin, ListView):
+    model = Journal
+    template_name = 'core/journal_list.html'
+    context_object_name = 'journals'
+
+    def get_queryset(self):
+        return Journal.objects.filter(user=self.request.user).order_by('-date')
+
+class JournalDetailView(LoginRequiredMixin, DetailView):
+    model = Journal
+    template_name = 'core/journal_detail.html'
+
+    def get_queryset(self):
+        return Journal.objects.filter(user=self.request.user)
+
+class JournalCreateView(LoginRequiredMixin, CreateView):
+    model = Journal
+    form_class = JournalForm
+    template_name = 'core/journal_form.html'
+    success_url = reverse_lazy('journal-list')
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        form.instance.date = timezone.now().date() # Auto-set date
+        try:
+            return super().form_valid(form)
+        except IntegrityError:
+            form.add_error(None, "You have already created a journal for today.")
+            return self.form_invalid(form)
+
+# Transaction Views
+class TransactionListView(LoginRequiredMixin, ListView):
+    model = Transaction
+    template_name = 'core/transaction_list.html'
+    context_object_name = 'transactions'
+
+    def get_queryset(self):
+        return Transaction.objects.filter(user=self.request.user).order_by('-date')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        transactions = context['transactions']
+        total_income = sum(t.amount for t in transactions if not t.is_expense)
+        total_expense = sum(t.amount for t in transactions if t.is_expense)
+        context['total_income'] = total_income
+        context['total_expense'] = total_expense
+        context['balance'] = total_income - total_expense
+        return context
+
+class IncomeCreateView(LoginRequiredMixin, CreateView):
+    model = Transaction
+    form_class = IncomeForm
+    template_name = 'core/transaction_form.html'
+    success_url = reverse_lazy('transaction-list')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Record Income'
+        return context
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        form.instance.is_expense = False
+        messages.success(self.request, 'Income recorded successfully.')
+        return super().form_valid(form)
+
+class ExpenseCreateView(LoginRequiredMixin, CreateView):
+    model = Transaction
+    form_class = ExpenseForm
+    template_name = 'core/transaction_form.html'
+    success_url = reverse_lazy('transaction-list')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Record Expense'
+        return context
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        form.instance.is_expense = True
+        messages.success(self.request, 'Expense recorded successfully.')
+        return super().form_valid(form)
+
+# LifeGoal Views
+class LifeGoalListView(LoginRequiredMixin, ListView):
+    model = LifeGoal
+    template_name = 'core/lifegoal_list.html'
+    context_object_name = 'goals'
+
+    def get_queryset(self):
+        return LifeGoal.objects.filter(user=self.request.user)
+
+class LifeGoalCreateView(LoginRequiredMixin, CreateView):
+    model = LifeGoal
+    form_class = LifeGoalForm
+    template_name = 'core/lifegoal_form.html'
+    success_url = reverse_lazy('lifegoal-list')
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        messages.success(self.request, 'Goal created successfully.')
+        return super().form_valid(form)
+
+class LifeGoalUpdateView(LoginRequiredMixin, UpdateView):
+    model = LifeGoal
+    form_class = LifeGoalUpdateForm
+    template_name = 'core/lifegoal_form.html'
+    success_url = reverse_lazy('lifegoal-list')
+
+    def get_queryset(self):
+        return LifeGoal.objects.filter(user=self.request.user)
+
+class LifeGoalDeleteView(LoginRequiredMixin, DeleteView):
+    model = LifeGoal
+    success_url = reverse_lazy('lifegoal-list')
+    template_name = 'core/lifegoal_confirm_delete.html'
+
+    def get_queryset(self):
+        return LifeGoal.objects.filter(user=self.request.user)
+
+# Share Views
+class ShareDashboardView(LoginRequiredMixin, TemplateView):
+    template_name = 'core/share_dashboard.html'
+
+    def get_context_data(self, **kwargs):
+        from django.db.models import Sum, F
+        from django.db.models.functions import Coalesce
+        context = super().get_context_data(**kwargs)
+        
+        # 1. Fetch all buy shares
+        # Note: Aggregation with order_by can cause grouping issues in SQLite/Django sometimes.
+        # We will calculate remaining quantity safely.
+        all_buys = BuyShare.objects.filter(user=self.request.user).order_by('-buy_date')
+        
+        # Calculate remaining for each
+        buy_shares_data = []
+        for buy in all_buys:
+            sold_qty = buy.sellshare_set.aggregate(total=Coalesce(Sum('quantity_sold'), 0))['total']
+            buy.remaining_quantity = buy.quantity - sold_qty
+            buy_shares_data.append(buy)
+        
+        # 2. Split into Current Holdings (Active) and Buy History (All)
+        current_holdings = [h for h in buy_shares_data if h.remaining_quantity > 0]
+        
+        # 3. Calculate Metrics
+        total_current_investment = sum(h.remaining_quantity * h.price_per_share for h in current_holdings)
+        
+        sales = SellShare.objects.filter(user=self.request.user).select_related('buy_share').order_by('-sell_date')
+        
+        # Use new total_sale_amount field
+        total_sales_value = sum(s.total_sale_amount for s in sales)
+        
+        # Cost of sold shares: quantity_sold * buy_price
+        total_cost_of_sold = sum(s.quantity_sold * s.buy_share.price_per_share for s in sales)
+        total_realized_pnl = total_sales_value - total_cost_of_sold
+        
+        context['current_holdings'] = current_holdings
+        context['buy_history'] = buy_shares_data
+        context['sales'] = sales
+        context['total_current_investment'] = total_current_investment
+        context['total_realized_pnl'] = total_realized_pnl
+        context['total_sales_value'] = total_sales_value
+        return context
+
+class BuyShareCreateView(LoginRequiredMixin, CreateView):
+    model = BuyShare
+    form_class = BuyShareForm
+    template_name = 'core/buyshare_form.html'
+    success_url = reverse_lazy('share-dashboard')
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        messages.success(self.request, 'Share purchase recorded.')
+        return super().form_valid(form)
+
+class BuyShareUpdateView(LoginRequiredMixin, UpdateView):
+    model = BuyShare
+    form_class = BuyShareForm
+    template_name = 'core/buyshare_form.html'
+    success_url = reverse_lazy('share-dashboard')
+
+    def get_queryset(self):
+        return BuyShare.objects.filter(user=self.request.user)
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Share holding updated.')
+        return super().form_valid(form)
+
+class BuyShareDeleteView(LoginRequiredMixin, DeleteView):
+    model = BuyShare
+    success_url = reverse_lazy('share-dashboard')
+    template_name = 'core/buyshare_confirm_delete.html'
+
+    def get_queryset(self):
+        return BuyShare.objects.filter(user=self.request.user)
+    
+    def delete(self, request, *args, **kwargs):
+        messages.success(request, 'Share holding deleted.')
+        return super().delete(request, *args, **kwargs)
+
+class SellShareCreateView(LoginRequiredMixin, CreateView):
+    model = SellShare
+    form_class = SellShareForm
+    template_name = 'core/sellshare_form.html'
+    success_url = reverse_lazy('share-dashboard')
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        messages.success(self.request, 'Share sale recorded.')
+        return super().form_valid(form)
+
+class SellShareUpdateView(LoginRequiredMixin, UpdateView):
+    model = SellShare
+    form_class = SellShareForm
+    template_name = 'core/sellshare_form.html'
+    success_url = reverse_lazy('share-dashboard')
+
+    def get_queryset(self):
+        return SellShare.objects.filter(user=self.request.user)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Share sale updated.')
+        return super().form_valid(form)
+
+class SellShareDeleteView(LoginRequiredMixin, DeleteView):
+    model = SellShare
+    success_url = reverse_lazy('share-dashboard')
+    template_name = 'core/sellshare_confirm_delete.html'
+
+    def get_queryset(self):
+        return SellShare.objects.filter(user=self.request.user)
+
+    def delete(self, request, *args, **kwargs):
+        messages.success(request, 'Share sale deleted.')
+        return super().delete(request, *args, **kwargs)
