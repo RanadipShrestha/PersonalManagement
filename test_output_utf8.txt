@@ -1,0 +1,726 @@
+﻿python : Creating 
+test database for 
+alias 'default' ('fil
+e:memorydb_default?mo
+de=memory&cache=share
+d')...
+At line:1 char:1
++ python manage.py 
+test core.tests_share
+_calculation -v 2 > 
+test_output ...
++ ~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~
+    + CategoryInfo   
+           : NotSpe  
+  cified: (Creatin   
+ g test d...che=s    
+hared')...:Strin    
+g) [], RemoteExc    
+eption
+    + FullyQualified 
+   ErrorId : Native  
+  CommandError
+ 
+
+Found 3 test(s).
+Operations to perform:
+  Synchronize unmigrated apps: crispy_bootstrap5, crispy_forms, messages, staticfiles
+  Apply all migrations: admin, auth, contenttypes, core, sessions
+Synchronizing apps without migrations:
+  Creating tables...
+    Running deferred SQL...
+Running migrations:
+  Applying contenttypes.0001_initial... OK
+  Applying auth.0001_initial... OK
+  Applying admin.0001_initial... OK
+  Applying admin.0002_logentry_remove_auto_add... OK
+  Applying admin.0003_logentry_add_action_flag_choices... OK
+  Applying contenttypes.0002_remove_content_type_name... OK
+  Applying auth.0002_alter_permission_name_max_length... OK
+  Applying auth.0003_alter_user_email_max_length... OK
+  Applying auth.0004_alter_user_username_opts... OK
+  Applying auth.0005_alter_user_last_login_null... OK
+  Applying auth.0006_require_contenttypes_0002... OK
+  Applying auth.0007_alter_validators_add_error_messages... OK
+  Applying auth.0008_alter_user_username_max_length... OK
+  Applying auth.0009_alter_user_last_name_max_length... OK
+  Applying auth.0010_alter_group_name_max_length... OK
+  Applying auth.0011_update_proxy_permissions... OK
+  Applying auth.0012_alter_user_first_name_max_length... OK
+  Applying core.0001_initial... OK
+  Applying core.0002_remove_todo_description... OK
+  Applying core.0003_remove_transaction_category... OK
+  Applying core.0004_alter_lifegoal_status... OK
+  Applying core.0005_sellshare_total_sale_amount... OK
+  Applying core.0006_futuremessage... OK
+  Applying core.0007_futuremessage_image_futuremessage_video... OK
+  Applying core.0008_buyshare_target_date... OK
+System check 
+identified some 
+issues:
+
+WARNINGS:
+?: 
+(staticfiles.W004) 
+The directory 'C:\Use
+rs\ranad\Desktop\Pers
+onalManagement\static
+' in the 
+STATICFILES_DIRS 
+setting does not 
+exist.
+
+System check 
+identified 1 issue 
+(0 silenced).
+test_calculate_price_
+from_total_amount (co
+re.tests_share_calcul
+ation.SellShareCalcul
+ationTests.test_calcu
+late_price_from_total
+_amount) ... ok
+test_double_entry_pre
+ference (core.tests_s
+hare_calculation.Sell
+ShareCalculationTests
+.test_double_entry_pr
+eference) ... ok
+test_validation_error
+_missing_both (core.t
+ests_share_calculatio
+n.SellShareCalculatio
+nTests.test_validatio
+n_error_missing_both)
+ ... FAIL
+
+=====================
+=====================
+=====================
+=======
+FAIL: test_validation
+_error_missing_both (
+core.tests_share_calc
+ulation.SellShareCalc
+ulationTests.test_val
+idation_error_missing
+_both)
+---------------------
+---------------------
+---------------------
+-------
+Traceback (most 
+recent call last):
+  File "C:\Users\rana
+d\Desktop\PersonalMan
+agement\core\tests_sh
+are_calculation.py", 
+line 48, in test_vali
+dation_error_missing_
+both
+    self.assertContai
+ns(response, "Please 
+provide either Sell 
+Price per Share OR 
+Total Sale Amount.", 
+status_code=200)
+    ~~~~~~~~~~~~~~~~~
+~~^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^
+AssertionError: 
+False is not true : 
+Couldn't find 
+'Please provide 
+either Sell Price 
+per Share OR Total 
+Sale Amount.' in the 
+following response
+b'<!DOCTYPE 
+html>\n<html 
+lang="en">\n<head>\n 
+   <meta 
+charset="UTF-8">\n   
+ <meta 
+name="viewport" conte
+nt="width=device-widt
+h, initial-scale=1.0"
+>\n    
+<title>Personal 
+Journey</title>\n    
+<link href="https://c
+dn.jsdelivr.net/npm/b
+ootstrap@5.3.0/dist/c
+ss/bootstrap.min.css"
+ rel="stylesheet">\n 
+   <link href="https:
+//cdn.jsdelivr.net/np
+m/bootstrap-icons@1.7
+.2/font/bootstrap-ico
+ns.css" 
+rel="stylesheet">\n  
+  <link href="https:/
+/fonts.googleapis.com
+/css2?family=Inter:wg
+ht@300;400;500;600;70
+0&display=swap" 
+rel="stylesheet">\n  
+  <style>\n        
+:root {\n            
+--primary-color: 
+#4a90e2;\n           
+ --secondary-color: 
+#6c757d;\n           
+ --success-color: 
+#40c463;\n           
+ --danger-color: 
+#e74c3c;\n           
+ --background-color: 
+#f8f9fa;\n           
+ --card-shadow: 0 
+4px 6px rgba(0, 0, 
+0, 0.05);\n          
+  --card-radius: 
+12px;\n        }\n   
+     body { \n       
+     padding-top: 
+70px; \n            
+background-color: var
+(--background-color);
+\n            
+font-family: 
+\'Inter\', 
+sans-serif;\n        
+    color: 
+#2c3e50;\n        
+}\n        .navbar 
+{\n            
+box-shadow: 0 2px 
+4px 
+rgba(0,0,0,0.08);\n  
+          
+background-color: 
+#2c3e50 !important; 
+/* Dark blue-grey 
+instead of pure 
+black */\n        
+}\n        
+.navbar-brand {\n    
+        font-weight: 
+600;\n            
+letter-spacing: 
+0.5px;\n        }\n  
+      .card { \n     
+       border: 
+none;\n            
+border-radius: var(--
+card-radius);\n      
+      box-shadow: var
+(--card-shadow);\n   
+         
+margin-bottom: 
+24px;\n            
+transition: 
+transform 0.2s ease, 
+box-shadow 0.2s 
+ease;\n        }\n   
+     .card:hover {\n 
+           
+transform: 
+translateY(-2px);\n  
+          
+box-shadow: 0 8px 
+12px rgba(0, 0, 0, 
+0.1);\n        }\n   
+     .btn {\n        
+    border-radius: 
+8px;\n            
+font-weight: 500;\n  
+          padding: 
+8px 16px;\n          
+  transition: all 
+0.2s;\n        }\n   
+     .btn-primary 
+{\n            
+background-color: var
+(--primary-color);\n 
+           
+border-color: var(--p
+rimary-color);\n     
+   }\n        
+.btn-success {\n     
+       
+background-color: var
+(--success-color);\n 
+           
+border-color: var(--s
+uccess-color);\n     
+   }\n        h1, 
+h2, h3, h4, h5, h6 
+{\n            
+font-weight: 700;\n  
+          color: 
+#1a1a1a;\n        
+}\n        .messages-
+container-floating 
+{\n            
+position: fixed;\n   
+         top: 
+80px;\n            
+right: 20px;\n       
+     z-index: 
+1060;\n            
+width: 320px;\n      
+      max-width: 
+90vw;\n        }\n   
+ </style>\n</head>\n<
+body>\n    <nav 
+class="navbar 
+navbar-expand-md 
+navbar-dark bg-dark 
+fixed-top">\n        
+<div class="container
+-fluid">\n           
+ <a 
+class="navbar-brand" 
+href="/dashboard/">Jo
+urney</a>\n          
+  <button class="navb
+ar-toggler" 
+type="button" data-bs
+-toggle="collapse" da
+ta-bs-target="#navbar
+Collapse">\n         
+       <span class="n
+avbar-toggler-icon"><
+/span>\n            
+</button>\n          
+  <div 
+class="collapse 
+navbar-collapse" id="
+navbarCollapse">\n   
+             <ul 
+class="navbar-nav 
+me-auto mb-2 
+mb-md-0">\n          
+          \n         
+               <li 
+class="nav-item"><a 
+class="nav-link" href
+="/todos/">Todos</a><
+/li>\n               
+         <li 
+class="nav-item"><a 
+class="nav-link" href
+="/journal/">Journal<
+/a></li>\n           
+             <li 
+class="nav-item"><a 
+class="nav-link" href
+="/finance/">Finance<
+/a></li>\n           
+             <li 
+class="nav-item"><a 
+class="nav-link" href
+="/goals/">Goals</a><
+/li>\n               
+         <li 
+class="nav-item"><a 
+class="nav-link" href
+="/share/">Shares</a>
+</li>\n              
+          <li 
+class="nav-item"><a 
+class="nav-link" 
+href="/future/">Time 
+Capsule</a></li>\n   
+                 \n  
+              
+</ul>\n              
+  <ul class="navbar-n
+av">\n               
+     \n              
+          <li class="
+nav-item"><span 
+class="nav-link 
+text-light">Hi, testu
+ser</span></li>\n    
+                    
+<li 
+class="nav-item">\n  
+                     
+     <form 
+action="/logout/" 
+method="post">\n     
+                     
+      <input 
+type="hidden" name="c
+srfmiddlewaretoken" v
+alue="W8vMEaymwVX27iG
+MyTkwKlM7tz1eBQc3ZFCY
+lQZWZs3vyZ2nYPI2NL27L
+04zSnns">\n          
+                     
+ <button 
+type="submit" 
+class="nav-link btn b
+tn-link">Logout</butt
+on>\n                
+            
+</form>\n            
+            </li>\n  
+                  \n 
+               
+</ul>\n            
+</div>\n        
+</div>\n    
+</nav>\n\n    <div 
+class="container 
+mt-4">\n        
+\n\n<div class="row j
+ustify-content-center
+">\n    <div 
+class="col-md-6">\n  
+      <div 
+class="card 
+border-danger">\n    
+        <div 
+class="card-header 
+bg-danger 
+text-white">Record 
+Share Sale</div>\n   
+         <div 
+class="card-body">\n 
+               <form 
+method="post">\n     
+               
+<input type="hidden" 
+name="csrfmiddlewaret
+oken" value="W8vMEaym
+wVX27iGMyTkwKlM7tz1eB
+Qc3ZFCYlQZWZs3vyZ2nYP
+I2NL27L04zSnns">\n   
+                 
+\n\n\n    \n    <div 
+id="div_id_buy_share"
+ class="mb-3">\n     
+   \n            \n  
+          <label\n   
+             
+for="id_buy_share" 
+class="form-label 
+requiredField">\n    
+            Buy 
+share<span class="ast
+eriskField">*</span>\
+n            
+</label>\n        
+\n\n        \n\n     
+   \n            \n  
+              \n     
+               \n    
+                    
+\n                   
+         <select 
+name="buy_share" 
+class="select 
+form-select" 
+required 
+id="id_buy_share">\n 
+ <option value="">---
+------</option>\n\n  
+<option value="1" 
+selected>Buy 
+TestCorp - 100</optio
+n>\n\n</select>\n    
+                    
+\n                   
+ \n                  
+  \n                 
+       \n\n\n    
+\n\n\n\n\n    
+\n\n\n\n             
+       \n            
+    \n            \n 
+       \n        \n  
+  </div>\n    \n\n\n 
+                   
+\n                   
+ <div class="row">\n 
+                     
+  <div 
+class="col-md-6">\n  
+                     
+     \n\n\n    \n    
+<div id="div_id_quant
+ity_sold" 
+class="mb-3">\n      
+  \n            \n   
+         <label\n    
+            for="id_q
+uantity_sold" 
+class="form-label 
+requiredField">\n    
+            Quantity 
+sold<span class="aste
+riskField">*</span>\n
+            
+</label>\n        
+\n\n        \n\n     
+   \n            \n  
+              \n     
+               \n    
+                    
+<input type="number" 
+name="quantity_sold" 
+value="10" 
+class="numberinput 
+form-control" 
+required id="id_quant
+ity_sold">\n         
+           \n        
+            \n       
+                 
+\n\n\n    \n\n\n\n\n 
+   \n\n\n\n          
+          \n         
+       \n            
+\n        \n        
+\n    </div>\n    
+\n\n\n               
+         </div>\n    
+                    
+<div 
+class="col-md-6">\n  
+                     
+     \n\n\n    \n    
+<div id="div_id_sell_
+date" 
+class="mb-3">\n      
+  \n            \n   
+         <label\n    
+            
+for="id_sell_date" 
+class="form-label 
+requiredField">\n    
+            Sell 
+date<span class="aste
+riskField">*</span>\n
+            
+</label>\n        
+\n\n        \n\n     
+   \n            \n  
+              \n     
+               \n    
+                    
+<input type="date" 
+name="sell_date" 
+value="2026-02-08" 
+class="dateinput 
+form-control" 
+required id="id_sell_
+date"><input 
+type="hidden" name="i
+nitial-sell_date" 
+value="2026-02-08" id
+="initial-id_sell_dat
+e">\n                
+    \n               
+     \n              
+          \n\n\n    
+\n\n\n\n\n    
+\n\n\n\n             
+       \n            
+    \n            \n 
+       \n        \n  
+  </div>\n    \n\n\n 
+                     
+  </div>\n           
+         </div>\n\n  
+                  
+<hr>\n               
+     <p 
+class="text-muted 
+small">Enter <strong>
+either</strong> Sell 
+Price per Share 
+<strong>OR</strong> 
+Total Sale 
+Amount.</p>\n\n      
+              <div 
+class="row">\n       
+                 
+<div 
+class="col-md-6">\n  
+                     
+     \n\n\n    \n    
+<div id="div_id_sell_
+price_per_share" 
+class="mb-3">\n      
+  \n            \n   
+         <label\n    
+            for="id_s
+ell_price_per_share" 
+class="form-label">\n
+                Sell 
+price per share\n    
+        </label>\n   
+     \n\n        
+\n\n        \n       
+     \n              
+  \n                 
+   \n                
+        <input 
+type="number" name="s
+ell_price_per_share" 
+step="0.01" 
+class="numberinput 
+form-control" id="id_
+sell_price_per_share"
+>\n                  
+  \n                 
+   \n                
+        \n\n\n    
+\n\n\n\n\n    
+\n\n\n\n             
+       \n            
+    \n            \n 
+       \n        \n  
+  </div>\n    \n\n\n 
+                     
+  </div>\n           
+             <div 
+class="col-md-6">\n  
+                     
+     \n\n\n    \n    
+<div id="div_id_total
+_sale_amount" 
+class="mb-3">\n      
+  \n            \n   
+         <label\n    
+            for="id_t
+otal_sale_amount" cla
+ss="form-label">\n   
+             Total 
+Sale Amount\n        
+    </label>\n       
+ \n\n        \n\n    
+    \n            \n 
+               \n    
+                \n   
+                     
+<input type="number" 
+name="total_sale_amou
+nt" step="0.01" 
+class="numberinput 
+form-control" id="id_
+total_sale_amount">\n
+                    
+\n                   
+ \n                  
+      \n\n\n    
+\n\n\n\n\n    
+\n\n\n\n             
+       \n            
+    \n            \n 
+       \n        \n  
+  </div>\n    \n\n\n 
+                     
+  </div>\n           
+         </div>\n\n  
+                  
+\n\n\n    \n    <div 
+id="div_id_notes" 
+class="mb-3">\n      
+  \n            \n   
+         <label\n    
+            
+for="id_notes" class=
+"form-label">\n      
+          Notes\n    
+        </label>\n   
+     \n\n        
+\n\n        \n       
+     \n              
+  \n                 
+   \n                
+        <textarea 
+name="notes" 
+cols="40" rows="10" 
+class="textarea 
+form-control" id="id_
+notes">\n</textarea>\
+n                    
+\n                   
+ \n                  
+      \n\n\n    
+\n\n\n\n\n    
+\n\n\n\n             
+       \n            
+    \n            \n 
+       \n        \n  
+  </div>\n    \n\n\n 
+                   
+<div class="mt-3">\n 
+                     
+  <button 
+type="submit" 
+class="btn 
+btn-danger">Record 
+Sell</button>\n      
+                  <a 
+href="/share/" 
+class="btn btn-second
+ary">Cancel</a>\n    
+                
+</div>\n             
+   </form>\n         
+   </div>\n        
+</div>\n    
+</div>\n</div>\n\n   
+ </div>\n\n    
+<script src="https://
+cdn.jsdelivr.net/npm/
+bootstrap@5.3.0/dist/
+js/bootstrap.bundle.m
+in.js"></script>\n   
+ <script>\n        
+// Auto-hide 
+messages after 4 
+seconds\n        setT
+imeout(function() 
+{\n            let 
+alerts = document.que
+rySelectorAll(\'.aler
+t-dismissible\');\n  
+          alerts.forE
+ach(function(alert) 
+{\n                
+let bsAlert = new boo
+tstrap.Alert(alert);\
+n                
+bsAlert.close();\n   
+         });\n       
+ }, 4000);\n    </scr
+ipt>\n</body>\n</html
+>\n'
+
+---------------------
+---------------------
+---------------------
+-------
+Ran 3 tests in 6.218s
+
+FAILED (failures=1)
+Destroying test 
+database for alias 
+'default' ('file:memo
+rydb_default?mode=mem
+ory&cache=shared')...
+
+  Applying sessions.0001_initial... OK

@@ -44,8 +44,8 @@ class SellShareCalculationTests(TestCase):
             'sell_date': timezone.now().date(),
         }
         response = self.client.post(reverse('sellshare-create'), data)
-        self.assertEqual(response.status_code, 200) # Re-renders form
-        self.assertFormError(response, 'form', None, "Please provide either Sell Price per Share OR Total Sale Amount.")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Please provide either Sell Price per Share OR Total Sale Amount.", status_code=200)
 
     def test_double_entry_preference(self):
         # Update: If both are provided, let's say we trust the Price Per Share? 

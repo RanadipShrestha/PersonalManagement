@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow border-0">
+            <div class="card-header bg-success text-white py-3 px-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-envelope-open-fill me-2"></i> Message Delivered</h5>
+                    <span class="badge bg-white text-success">{{ object.delivery_date|date:"F d, Y" }}</span>
+                </div>
+            </div>
+            <div class="card-body p-5">
+                <h2 class="fw-bold mb-4 text-center">{{ object.title }}</h2>
+                <div class="message-content text-muted lh-lg fs-5">
+                    {{ object.message|linebreaks }}
+                </div>
+                
+                {% if object.image %}
+                <div class="mt-4">
+                    <img src="{{ object.image.url }}" alt="Attached Image" class="img-fluid rounded shadow-sm" style="max-width: 100%; height: auto;">
+                </div>
+                {% endif %}
+                
+                {% if object.video %}
+                <div class="mt-4">
+                    <video controls class="w-100 rounded shadow-sm">
+                        <source src="{{ object.video.url }}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+                {% endif %}
+            </div>
+            <div class="card-footer bg-light border-0 py-3 px-4 text-end">
+                <a href="{% url 'future-message-list' %}" class="btn btn-primary">Back to Time Capsule</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

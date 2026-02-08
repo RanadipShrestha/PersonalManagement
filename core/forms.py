@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
-from .models import Todo, Journal, Transaction, LifeGoal, BuyShare, SellShare
+from .models import Todo, Journal, Transaction, LifeGoal, BuyShare, SellShare, FutureMessage
 
 class CustomUserCreationForm(UserCreationForm):
     class Meta:
@@ -74,7 +74,7 @@ class BuyShareForm(forms.ModelForm):
             
             if total_price:
                  # Recalculate price per share to match total exactly
-                 cleaned_data['price_per_share'] = total_price / quantity
+                 cleaned_data['price_per_share'] = round(total_price / quantity, 2)
             
             elif price_per_share and not total_price:
                  # Calculate total from price
@@ -123,7 +123,7 @@ class SellShareForm(forms.ModelForm):
             # If BOTH are provided, Save BOTH as is (User override).
 
             if total_sale_amount and not sell_price_per_share:
-                cleaned_data['sell_price_per_share'] = total_sale_amount / quantity_sold
+                cleaned_data['sell_price_per_share'] = round(total_sale_amount / quantity_sold, 2)
                 
             elif sell_price_per_share and not total_sale_amount:
                 cleaned_data['total_sale_amount'] = sell_price_per_share * quantity_sold
@@ -157,3 +157,18 @@ class SellShareForm(forms.ModelForm):
                     f"You only have {remaining} shares remaining for {buy_share.company_name}."
                 )
         return cleaned_data
+
+class FutureMessageForm(forms.ModelForm):
+    class Meta:
+        model = FutureMessage # We need to import this!
+        fields = ['title', 'message', 'delivery_date', 'image', 'video']
+        widgets = {
+            'delivery_date': forms.DateInput(attrs={'type': 'date'}),
+        }
+    
+    def clean_delivery_date(self):
+        delivery_date = self.cleaned_data.get('delivery_date')
+        from django.utils import timezone
+        if delivery_date <= timezone.now().date():
+             raise forms.ValidationError("Delivery date must be in the future.")
+        return delivery_date

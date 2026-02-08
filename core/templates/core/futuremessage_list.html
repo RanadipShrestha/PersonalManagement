@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+.tab-pane:not(.show) {
+    display: none !important;
+}
+</style>
+<div class="row mb-4 align-items-center">
+    <div class="col">
+        <h2 class="fw-bold text-primary">Time Capsule</h2>
+        <p class="text-muted">Messages to your future self</p>
+    </div>
+    <div class="col-auto">
+        <a href="{% url 'future-message-create' %}" class="btn btn-primary shadow-sm"><i class="bi bi-clock-history"></i> Write to Future</a>
+    </div>
+</div>
+
+<ul class="nav nav-pills mb-4" id="pills-tab" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="pills-locked-tab" data-bs-toggle="pill" data-bs-target="#pills-locked" type="button" role="tab" aria-controls="pills-locked" aria-selected="true">Locked Messages</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="pills-delivered-tab" data-bs-toggle="pill" data-bs-target="#pills-delivered" type="button" role="tab" aria-controls="pills-delivered" aria-selected="false">Delivered Messages</button>
+    </li>
+</ul>
+
+<div class="tab-content" id="pills-tabContent">
+    <!-- Locked Messages -->
+    <div class="tab-pane fade show active" id="pills-locked" role="tabpanel" aria-labelledby="pills-locked-tab">
+        <div class="row">
+            {% for msg in locked_messages %}
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 border-0 shadow-sm opacity-75">
+                        <div class="card-body text-center py-5">
+                            <div class="mb-3 text-secondary display-4"><i class="bi bi-lock-fill"></i></div>
+                            <h5 class="card-title fw-bold text-muted mb-2">Locked Code: #{{ msg.id }}</h5>
+                            <div class="countdown text-primary fw-bold fs-5 mb-2" data-delivery="{{ msg.delivery_date|date:'Y-m-d' }}">
+                                <span class="days">0</span>d 
+                                <span class="hours">0</span>h 
+                                <span class="minutes">0</span>m 
+                                <span class="seconds">0</span>s
+                            </div>
+                            <p class="text-muted small">Opens on {{ msg.delivery_date|date:"F d, Y" }}</p>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-12 py-5 text-center text-muted">
+                    <p>No messages locked in the time capsule.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Delivered Messages -->
+    <div class="tab-pane fade" id="pills-delivered" role="tabpanel" aria-labelledby="pills-delivered-tab">
+        <div class="row">
+            {% for msg in delivered_messages %}
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-2">
+                                <small class="text-success fw-bold text-uppercase"><i class="bi bi-check-circle-fill"></i> Delivered</small>
+                                <small class="text-muted">{{ msg.delivery_date|date:"F d, Y" }}</small>
+                            </div>
+                            <h5 class="card-title fw-bold mb-3">{{ msg.title }}</h5>
+                            <a href="{% url 'future-message-detail' msg.pk %}" class="btn btn-outline-primary btn-sm stretched-link">Read Message</a>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-12 py-5 text-center text-muted">
+                    <p>No messages delivered yet.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+function updateCountdowns() {
+    const countdowns = document.querySelectorAll('.countdown');
+    const now = new Date();
+    
+    countdowns.forEach(countdown => {
+        const deliveryDate = new Date(countdown.dataset.delivery + 'T00:00:00');
+        const diff = deliveryDate - now;
+        
+        if (diff > 0) {
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            
+            countdown.querySelector('.days').textContent = days;
+            countdown.querySelector('.hours').textContent = hours;
+            countdown.querySelector('.minutes').textContent = minutes;
+            countdown.querySelector('.seconds').textContent = seconds;
+        } else {
+            countdown.innerHTML = '<span class="text-success">Ready to Open!</span>';
+        }
+    });
+}
+
+// Update immediately and then every second
+updateCountdowns();
+setInterval(updateCountdowns, 1000);
+</script>
+{% endblock %}

@@ -351,8 +351,9 @@ class LifeGoalDeleteView(LoginRequiredMixin, DeleteView):
     success_url = reverse_lazy('lifegoal-list')
     template_name = 'core/lifegoal_confirm_delete.html'
 
-    def get_queryset(self):
-        return LifeGoal.objects.filter(user=self.request.user)
+    def delete(self, request, *args, **kwargs):
+        messages.success(request, 'Goal deleted successfully.')
+        return super().delete(request, *args, **kwargs)
 
 # Share Views
 class ShareDashboardView(LoginRequiredMixin, TemplateView):
@@ -479,3 +480,48 @@ class SellShareDeleteView(LoginRequiredMixin, DeleteView):
     def delete(self, request, *args, **kwargs):
         messages.success(request, 'Share sale deleted.')
         return super().delete(request, *args, **kwargs)
+
+# Future Message Views
+from .models import FutureMessage
+from .forms import FutureMessageForm
+
+class FutureMessageListView(LoginRequiredMixin, ListView):
+    model = FutureMessage
+    template_name = 'core/futuremessage_list.html'
+    context_object_name = 'messages'
+
+    def get_queryset(self):
+        return FutureMessage.objects.filter(user=self.request.user).order_by('delivery_date')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        all_messages = self.get_queryset()
+        today = timezone.now().date()
+        
+        context['delivered_messages'] = all_messages.filter(delivery_date__lte=today)
+        context['locked_messages'] = all_messages.filter(delivery_date__gt=today)
+        return context
+
+class FutureMessageCreateView(LoginRequiredMixin, CreateView):
+    model = FutureMessage
+    form_class = FutureMessageForm
+    template_name = 'core/futuremessage_form.html'
+    success_url = reverse_lazy('future-message-list')
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        return super().form_valid(form)
+
+class FutureMessageDetailView(LoginRequiredMixin, DetailView):
+    model = FutureMessage
+    template_name = 'core/futuremessage_detail.html'
+
+    def get_queryset(self):
+        return FutureMessage.objects.filter(user=self.request.user)
+
+    def get_object(self, queryset=None):
+        obj = super().get_object(queryset)
+        if obj.delivery_date > timezone.now().date():
+            from django.core.exceptions import PermissionDenied
+            raise PermissionDenied("This message is locked until {}".format(obj.delivery_date))
+        return obj

@@ -48,4 +48,9 @@ urlpatterns = [
     path('share/sell/new/', views.SellShareCreateView.as_view(), name='sellshare-create'),
     path('share/sell/<int:pk>/update/', views.SellShareUpdateView.as_view(), name='sellshare-update'),
     path('share/sell/<int:pk>/delete/', views.SellShareDeleteView.as_view(), name='sellshare-delete'),
+
+    # Future Messages
+    path('future/', views.FutureMessageListView.as_view(), name='future-message-list'),
+    path('future/new/', views.FutureMessageCreateView.as_view(), name='future-message-create'),
+    path('future/<int:pk>/', views.FutureMessageDetailView.as_view(), name='future-message-detail'),
 ]

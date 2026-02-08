@@ -2,6 +2,16 @@
 {% load crispy_forms_tags %}
 
 {% block content %}
+{% if messages %}
+<div class="messages-container-floating">
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+</div>
+{% endif %}
 <div class="row justify-content-center">
     <div class="col-md-6">
         <div class="card border-danger">
@@ -9,6 +19,13 @@
             <div class="card-body">
                 <form method="post">
                     {% csrf_token %}
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
                     {{ form.buy_share|as_crispy_field }}
                     
                     <div class="row">
