@@ -1,0 +1,293 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    .feed-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .memory-collapsible-card {
+        background: #fff;
+        border-radius: 16px;
+        border: 1px solid rgba(0,0,0,0.08);
+        margin-bottom: 15px;
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+
+    .card-header-clickable {
+        padding: 20px 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .card-header-clickable:hover {
+        background: #fcfcfc;
+    }
+
+    .expand-icon {
+        transition: transform 0.3s ease;
+        color: #adb5bd;
+    }
+    .expanded .expand-icon {
+        transform: rotate(180deg);
+        color: #212529;
+    }
+
+    .card-content {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.4s cubic-bezier(0, 1, 0, 1);
+        padding: 0 25px;
+    }
+    .expanded .card-content {
+        max-height: 2000px;
+        transition: max-height 0.6s ease-in;
+        padding: 0 25px 25px 25px;
+    }
+
+    /* Mosaic Media Grid */
+    .mosaic-grid {
+        display: grid;
+        gap: 6px;
+        background: #f8f9fa;
+        border-radius: 12px;
+        overflow: hidden;
+        margin: 15px 0;
+    }
+
+    .mosaic-item {
+        position: relative;
+        overflow: hidden;
+        background: #eee;
+        cursor: zoom-in;
+    }
+
+    .mosaic-item img, .mosaic-item video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    /* Grid Layouts */
+    .mosaic-1 { grid-template-columns: 1fr; height: 400px; }
+    .mosaic-2 { grid-template-columns: 1fr 1fr; height: 300px; }
+    .mosaic-3 { grid-template-columns: 2fr 1fr; grid-template-rows: 1fr 1fr; height: 400px; }
+    .mosaic-3 .mosaic-item:first-child { grid-row: span 2; }
+    .mosaic-4 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; height: 400px; }
+    .mosaic-many { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); height: auto; min-height: 300px; }
+
+    /* Messenger Lightbox */
+    .messenger-lightbox {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.95);
+        display: none;
+        z-index: 2000;
+        justify-content: center;
+        align-items: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    .messenger-lightbox.active {
+        display: flex;
+        opacity: 1;
+    }
+    .lightbox-content {
+        max-width: 95%;
+        max-height: 95%;
+        position: relative;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .lightbox-media {
+        max-width: 100%;
+        max-height: 80vh;
+        border-radius: 4px;
+        box-shadow: 0 0 40px rgba(0,0,0,0.5);
+    }
+    
+    .lightbox-controls {
+        margin-top: 25px;
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+    }
+    
+    .btn-lightbox {
+        background: rgba(255,255,255,0.15);
+        color: white;
+        border: none;
+        padding: 10px 25px;
+        border-radius: 50px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: background 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .btn-lightbox:hover {
+        background: rgba(255,255,255,0.25);
+        color: white;
+    }
+
+    .close-lightbox {
+        position: absolute;
+        top: 20px;
+        right: 30px;
+        color: white;
+        font-size: 2.5rem;
+        cursor: pointer;
+        z-index: 2001;
+    }
+
+    .card-meta {
+        font-size: 0.8rem;
+        color: #adb5bd;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+</style>
+
+<div class="feed-container">
+    <div class="row align-items-center mb-5 mt-4">
+        <div class="col">
+            <h1 class="fw-bold mb-0">Memories</h1>
+            <p class="text-muted small">Relive your journey, one step at a time.</p>
+        </div>
+        <div class="col-auto">
+            <a href="{% url 'memory-create' %}" class="btn btn-primary rounded-pill px-4 shadow-sm">
+                <i class="bi bi-plus-lg me-1"></i> New Memory
+            </a>
+        </div>
+    </div>
+
+    {% if memories %}
+        {% for memory in memories %}
+        <div class="memory-collapsible-card" id="card-{{ memory.id }}">
+            <div class="card-header-clickable" onclick="toggleCard('{{ memory.id }}')">
+                <div>
+                    <span class="card-meta d-block mb-1">{{ memory.created_at|date:"F d, Y" }}</span>
+                    <h2 class="h5 fw-bold mb-0">{{ memory.title }}</h2>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <span class="badge bg-light text-muted border rounded-pill">{{ memory.files.count }} items</span>
+                    <i class="bi bi-chevron-down expand-icon fs-5"></i>
+                </div>
+            </div>
+
+            <div class="card-content">
+                {% if memory.message %}
+                    <p class="mt-2 mb-3 text-muted" style="line-height: 1.6;">{{ memory.message }}</p>
+                {% endif %}
+
+                {% with count=memory.files.count %}
+                <div class="mosaic-grid {% if count == 1 %}mosaic-1{% elif count == 2 %}mosaic-2{% elif count == 3 %}mosaic-3{% elif count == 4 %}mosaic-4{% else %}mosaic-many{% endif %}">
+                    {% for m_file in memory.files.all %}
+                        <div class="mosaic-item">
+                            {% if m_file.file_type == 'image' %}
+                                <img src="{{ m_file.file.url }}" alt="{{ memory.title }}" onclick="openLightbox('{{ m_file.file.url }}', 'image')" loading="lazy">
+                            {% else %}
+                                <div class="position-relative h-100 w-100" onclick="openLightbox('{{ m_file.file.url }}', 'video')">
+                                    <video src="{{ m_file.file.url }}" class="w-100 h-100"></video>
+                                    <div class="position-absolute top-50 left-50 translate-middle">
+                                        <i class="bi bi-play-circle-fill text-white fs-1 shadow"></i>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+                {% endwith %}
+
+                <div class="text-end mt-2">
+                    <a href="{% url 'memory-delete' memory.pk %}" class="btn btn-sm btn-outline-danger border-0 opacity-75">
+                        <i class="bi bi-trash3 me-1"></i> Delete Memory
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="text-center py-5">
+            <div class="bg-light d-inline-block p-4 rounded-circle mb-4">
+                <i class="bi bi-camera text-muted" style="font-size: 3rem;"></i>
+            </div>
+            <h3 class="fw-bold">No memories captured yet</h3>
+            <p class="text-muted">Start building your gallery today.</p>
+            <a href="{% url 'memory-create' %}" class="btn btn-primary rounded-pill px-4 mt-2 shadow">Create New</a>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Full-screen Lightbox -->
+<div id="messengerLightbox" class="messenger-lightbox" onclick="closeLightbox()">
+    <span class="close-lightbox" onclick="closeLightbox()">&times;</span>
+    <div class="lightbox-content" onclick="event.stopPropagation()">
+        <div id="lightboxMediaContainer"></div>
+        <div class="lightbox-controls">
+            <a id="downloadBtn" href="" download class="btn-lightbox">
+                <i class="bi bi-download"></i> Download
+            </a>
+            <button class="btn-lightbox bg-transparent text-white opacity-75" onclick="closeLightbox()">
+                Close
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleCard(id) {
+        const card = document.getElementById('card-' + id);
+        card.classList.toggle('expanded');
+    }
+
+    function openLightbox(url, type) {
+        const lightbox = document.getElementById('messengerLightbox');
+        const container = document.getElementById('lightboxMediaContainer');
+        const download = document.getElementById('downloadBtn');
+        
+        container.innerHTML = '';
+        if (type === 'image') {
+            const img = document.createElement('img');
+            img.src = url;
+            img.className = 'lightbox-media';
+            container.appendChild(img);
+        } else {
+            const video = document.createElement('video');
+            video.src = url;
+            video.className = 'lightbox-media';
+            video.controls = true;
+            video.autoplay = true;
+            container.appendChild(video);
+        }
+        
+        download.href = url;
+        lightbox.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+        const lightbox = document.getElementById('messengerLightbox');
+        const container = document.getElementById('lightboxMediaContainer');
+        container.innerHTML = ''; // Stop video playback
+        lightbox.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeLightbox();
+    });
+</script>
+{% endblock %}

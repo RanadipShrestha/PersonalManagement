@@ -10,10 +10,131 @@ from django.utils import timezone
 from django.db.models import Sum, F
 from django.db.models.functions import Coalesce
 from .forms import CustomUserCreationForm, TodoForm, JournalForm, IncomeForm, ExpenseForm, LifeGoalForm, LifeGoalUpdateForm, BuyShareForm, SellShareForm
-from .models import Todo, Journal, Transaction, LifeGoal, BuyShare, SellShare
+from .models import Todo, Journal, Transaction, LifeGoal, BuyShare, SellShare, Memory, MemoryFile, MonthlyParticipation, ParticipationClick, FutureMessage
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
+
+# Authentication Views
+
+class MonthlyParticipationView(LoginRequiredMixin, TemplateView):
+    template_name = 'core/participation_detail.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        
+        # Get or create participation object
+        participation, created = MonthlyParticipation.objects.get_or_create(
+            user=user,
+            defaults={'current_amount': 1000.00, 'last_processed_date': timezone.now().date().replace(day=1)}
+        )
+        
+        today = timezone.now().date()
+        current_month_start = today.replace(day=1)
+        
+        # We only want to process missing months if the account actually existed *before* this month.
+        # But wait, we set last_processed_date = current_month_start initially.
+        # If it's already current_month_start, the loop `while last_date < current_month_start:` won't run!
+        # WHY did it run in the user's local instance?
+        # Ah, because `timezone.now().date().replace(day=1)` isn't timezone-aware in the same way, or the DB already had it created from *last month* tests?
+        # If the DB already had it created from a previous attempt/bug when `last_processed_date` might have been set to `timezone.now().date()` (which could be the previous month if created before today's 1st)?
+        # Let's add a `created_at` field, or simply just ensure the loop works correctly.
+        # But we already created it. The exact issue the user faced: "the current should be 1000 not 1500".
+        # If they just visited the page for the first time *today* (March), and the DB record was created *just now*, it should be 1000.
+        # If it somehow was created last month (Feb), and they visit now, it expects them to have paid in Feb. If they just created it in Feb (but never visited until Mar), it penalizes.
+        # To prevent penalizing immediately upon first creation, we should just ensure `created` is handled.
+        
+        if created:
+            # If it was JUST created, don't do any back-calculation. Just save the 1000 and return.
+            participation.current_amount = 1000.00
+            participation.last_processed_date = current_month_start
+            participation.save()
+        else:
+            last_date = participation.last_processed_date
+            temp_amount = float(participation.current_amount)
+            # Only process growth if it's NOT a newly created object
+            while last_date < current_month_start:
+                # Check if user paid in the month of last_date
+                was_paid = ParticipationClick.objects.filter(
+                    user=user,
+                    click_date__year=last_date.year,
+                    click_date__month=last_date.month
+                ).exists()
+                
+                if was_paid:
+                    temp_amount *= 1.025
+                else:
+                    temp_amount *= 1.50
+                
+                # Move to next month
+                if last_date.month == 12:
+                    last_date = last_date.replace(year=last_date.year + 1, month=1)
+                else:
+                    last_date = last_date.replace(month=last_date.month + 1)
+            
+            participation.current_amount = temp_amount
+            participation.last_processed_date = current_month_start
+            participation.save()
+        
+        # Check if already paid for CURRENT month
+        is_paid_current = ParticipationClick.objects.filter(
+            user=user,
+            click_date__year=today.year,
+            click_date__month=today.month
+        ).exists()
+        
+        context['participation'] = participation
+        context['is_paid_today'] = is_paid_current
+        
+        # Fetch payment history
+        history = ParticipationClick.objects.filter(user=user).order_by('-click_date')
+        context['history'] = history
+        return context
+
+@login_required
+def record_participation_click(request):
+    user = request.user
+    today = timezone.now().date()
+    
+    # Check if already clicked this month
+    already_clicked = ParticipationClick.objects.filter(
+        user=user,
+        click_date__year=today.year,
+        click_date__month=today.month
+    ).exists()
+    
+    
+    if not already_clicked:
+        # Get current amount
+        participation = MonthlyParticipation.objects.get(user=user)
+        ParticipationClick.objects.create(user=user, click_date=today, recorded_amount=participation.current_amount)
+        messages.success(request, "Payment recorded for this month!")
+    else:
+        messages.info(request, "You have already recorded your payment for this month.")
+        
+    return redirect('participation-detail')
+
+@login_required
+@require_POST
+def unrecord_participation_click(request):
+    user = request.user
+    today = timezone.now().date()
+    
+    # Check if clicked this month
+    click = ParticipationClick.objects.filter(
+        user=user,
+        click_date__year=today.year,
+        click_date__month=today.month
+    ).first()
+    
+    if click:
+        click.delete()
+        messages.success(request, "Payment record for this month has been undone.")
+    else:
+        messages.info(request, "You haven't recorded a payment for this month yet.")
+        
+    return redirect('participation-detail')
 
 # Authentication Views
 def register(request):
@@ -482,7 +603,6 @@ class SellShareDeleteView(LoginRequiredMixin, DeleteView):
         return super().delete(request, *args, **kwargs)
 
 # Future Message Views
-from .models import FutureMessage
 from .forms import FutureMessageForm
 
 class FutureMessageListView(LoginRequiredMixin, ListView):
@@ -525,3 +645,45 @@ class FutureMessageDetailView(LoginRequiredMixin, DetailView):
             from django.core.exceptions import PermissionDenied
             raise PermissionDenied("This message is locked until {}".format(obj.delivery_date))
         return obj
+# Memory Views
+from .forms import MemoryForm
+
+class MemoryListView(LoginRequiredMixin, ListView):
+    model = Memory
+    template_name = 'core/memory_list.html'
+    context_object_name = 'memories'
+
+    def get_queryset(self):
+        return Memory.objects.filter(user=self.request.user).order_by('-created_at')
+
+class MemoryCreateView(LoginRequiredMixin, CreateView):
+    model = Memory
+    form_class = MemoryForm
+    template_name = 'core/memory_form.html'
+    success_url = reverse_lazy('memory-list')
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        response = super().form_valid(form)
+        
+        files = self.request.FILES.getlist('files')
+        for f in files:
+            file_type = 'image'
+            if f.content_type.startswith('video'):
+                file_type = 'video'
+            MemoryFile.objects.create(memory=self.object, file=f, file_type=file_type)
+        
+        messages.success(self.request, 'Memory saved successfully.')
+        return response
+
+class MemoryDeleteView(LoginRequiredMixin, DeleteView):
+    model = Memory
+    template_name = 'core/memory_confirm_delete.html' # Need to create this too or use a generic one
+    success_url = reverse_lazy('memory-list')
+
+    def get_queryset(self):
+        return Memory.objects.filter(user=self.request.user)
+
+    def delete(self, request, *args, **kwargs):
+        messages.success(request, 'Memory deleted successfully.')
+        return super().delete(request, *args, **kwargs)

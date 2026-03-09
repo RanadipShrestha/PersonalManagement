@@ -53,4 +53,13 @@ urlpatterns = [
     path('future/', views.FutureMessageListView.as_view(), name='future-message-list'),
     path('future/new/', views.FutureMessageCreateView.as_view(), name='future-message-create'),
     path('future/<int:pk>/', views.FutureMessageDetailView.as_view(), name='future-message-detail'),
+    # Memories
+    path('memories/', views.MemoryListView.as_view(), name='memory-list'),
+    path('memories/new/', views.MemoryCreateView.as_view(), name='memory-create'),
+    path('memories/<int:pk>/delete/', views.MemoryDeleteView.as_view(), name='memory-delete'),
+    
+    # Monthly Participation
+    path('participation/', views.MonthlyParticipationView.as_view(), name='participation-detail'),
+    path('participation/click/', views.record_participation_click, name='record-participation-click'),
+    path('participation/unclick/', views.unrecord_participation_click, name='unrecord-participation-click'),
 ]

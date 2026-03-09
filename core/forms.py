@@ -172,3 +172,11 @@ class FutureMessageForm(forms.ModelForm):
         if delivery_date <= timezone.now().date():
              raise forms.ValidationError("Delivery date must be in the future.")
         return delivery_date
+from .models import Memory
+
+class MemoryForm(forms.ModelForm):
+    files = forms.FileField(widget=forms.ClearableFileInput(), required=False)
+
+    class Meta:
+        model = Memory
+        fields = ['title', 'message']

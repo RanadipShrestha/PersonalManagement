@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <!-- Left Side: History -->
+        <div class="col-md-4 mb-4 mb-md-0">
+            <div class="card shadow-sm border-0 h-100 participation-card">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-4 text-primary border-bottom pb-3">
+                        <i class="bi bi-clock-history me-2"></i> Payment History
+                    </h5>
+                    {% if history %}
+                        <div class="list-group list-group-flush history-list">
+                            {% for record in history %}
+                            <div class="list-group-item d-flex flex-column align-items-start bg-transparent px-0 py-3 border-light group-hover-bg">
+                                <div class="w-100 d-flex justify-content-between align-items-center mb-1">
+                                    <span class="fw-medium text-dark"><i class="bi bi-calendar-check text-success me-2"></i>{{ record.click_date|date:"F j, Y" }}</span>
+                                </div>
+                                <div class="w-100 mt-1">
+                                    <span class="badge bg-light text-dark shadow-sm border px-3 py-2 rounded-pill fs-6 w-100 text-start">
+                                        Recorded: 
+                                        {% if record.recorded_amount %}
+                                            <span class="fw-bold float-end">रु {{ record.recorded_amount|floatformat:2 }}</span>
+                                        {% else %}
+                                            <span class="text-muted fst-italic float-end">N/A</span>
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-5">
+                            <i class="bi bi-journal-x display-4 text-light mb-3"></i>
+                            <p>No payment history recorded yet.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side: Main Participation Card -->
+        <div class="col-md-8">
+            <div class="card shadow-lg border-0 participation-card">
+                <div class="card-body p-5 text-center">
+                    <h1 class="display-4 fw-bold text-primary mb-3">Monthly Participation</h1>
+                    <p class="text-muted fs-5 mb-4">Track your growth by staying active every month.</p>
+                    
+                    <div class="amount-display py-4 mb-4 rounded-4 bg-light">
+                        <span class="text-secondary text-uppercase fw-bold d-block mb-1" style="font-size: 0.8rem; letter-spacing: 2px;">Current Amount</span>
+                        <h2 class="display-1 fw-bold text-dark mb-0">RS: {{ participation.current_amount|floatformat:2 }}</h2>
+                    </div>
+
+                    <div class="status-box mb-5">
+                        {% if is_paid_today %}
+                            <div class="alert alert-success border-0 py-3 rounded-pill d-inline-block px-5 mb-3">
+                                <i class="bi bi-check-circle-fill me-2"></i>
+                                <span class="fw-bold">Payment Recorded for {{ today|date:"F Y" }}</span>
+                            </div>
+                            <div>
+                                <form action="{% url 'unrecord-participation-click' %}" method="post">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-outline-danger rounded-pill px-4 btn-sm hover-grow">
+                                        <i class="bi bi-arrow-counterclockwise me-1"></i> Mistakenly clicked? Undo Payment
+                                    </button>
+                                </form>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-warning border-0 py-3 rounded-pill d-inline-block px-5 mb-4">
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                <span class="fw-bold">Pending Payment for this month</span>
+                            </div>
+                            <div>
+                                <form action="{% url 'record-participation-click' %}" method="post">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-primary btn-lg px-5 py-3 rounded-pill shadow-sm hover-grow">
+                                        <i class="bi bi-wallet2 me-2"></i> Record Monthly Payment
+                                    </button>
+                                </form>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="info-footer mt-4 p-4 rounded-4 border">
+                        <div class="row text-start align-items-center">
+                            <div class="col-md-2 text-center">
+                                <i class="bi bi-info-circle fs-1 text-primary"></i>
+                            </div>
+                            <div class="col-md-10">
+                                <h6 class="fw-bold mb-1">How it works:</h6>
+                                <p class="small text-muted mb-0">
+                                    Click the button once every month to record your participation. 
+                                    Staying active grants you a <strong>2.5% growth</strong> next month. 
+                                    Missing a payment results in a <strong>50% penalty growth</strong> on the current amount.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .participation-card {
+        background: white;
+        border-radius: 20px;
+    }
+    .amount-display {
+        border: 2px solid #f8f9fa;
+        transition: transform 0.3s ease;
+    }
+    .amount-display:hover {
+        transform: scale(1.02);
+    }
+    .hover-grow {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .hover-grow:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+    }
+    .rounded-4 {
+        border-radius: 1rem !important;
+    }
+</style>
+{% endblock %}

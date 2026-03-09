@@ -155,3 +155,45 @@ class FutureMessage(models.Model):
 
     def __str__(self):
         return self.title
+class Memory(models.Model):
+    STYLE_CHOICES = [
+        ('grid', 'Grid'),
+        ('masonry', 'Masonry'),
+        ('carousel', 'Carousel'),
+    ]
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    title = models.CharField(max_length=200)
+    message = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    display_style = models.CharField(max_length=20, choices=STYLE_CHOICES, default='grid')
+
+    def __str__(self):
+        return self.title
+
+class MemoryFile(models.Model):
+    FILE_TYPE_CHOICES = [
+        ('image', 'Image'),
+        ('video', 'Video'),
+    ]
+    memory = models.ForeignKey(Memory, on_delete=models.CASCADE, related_name='files')
+    file = models.FileField(upload_to='memories/')
+    file_type = models.CharField(max_length=10, choices=FILE_TYPE_CHOICES)
+
+    def __str__(self):
+        return f"{self.memory.title} - {self.file_type}"
+
+class MonthlyParticipation(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    current_amount = models.DecimalField(max_digits=15, decimal_places=2, default=1000.00)
+    last_processed_date = models.DateField(default=timezone.now)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.current_amount}"
+
+class ParticipationClick(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    click_date = models.DateField(default=timezone.now)
+    recorded_amount = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.click_date}"
