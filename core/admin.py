@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Todo, Journal, Transaction, LifeGoal, BuyShare, SellShare, FutureMessage
+from .models import Todo, Journal, Transaction, LifeGoal, BuyShare, SellShare, FutureMessage,ParticipationClick,MonthlyParticipation
 
 # Register your models here.
 @admin.register(Todo)
@@ -47,3 +47,6 @@ class FutureMessageAdmin(admin.ModelAdmin):
     list_display = ['title', 'user', 'delivery_date', 'is_read', 'created_at']
     list_filter = ['delivery_date', 'is_read', 'created_at']
     search_fields = ['title', 'message', 'user__username']
+
+admin.site.register(ParticipationClick)
+admin.site.register(MonthlyParticipation)

@@ -69,8 +69,8 @@ class MonthlyParticipationTests(TestCase):
         self.client.get(reverse('participation-detail'))
         
         participation.refresh_from_db()
-        # 2.5% growth
-        self.assertEqual(participation.current_amount, Decimal('1025.00'))
+        # 1% growth
+        self.assertEqual(participation.current_amount, Decimal('1010.00'))
 
     def test_record_click_multiple_times(self):
         from django.urls import reverse

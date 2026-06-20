@@ -63,7 +63,7 @@ class MonthlyParticipationView(LoginRequiredMixin, TemplateView):
                 ).exists()
                 
                 if was_paid:
-                    temp_amount *= 1.025
+                    temp_amount *= 1.01
                 else:
                     temp_amount *= 1.50
                 
